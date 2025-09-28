@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Retro Win95-style Site-Game</title>
+
+<!-- Pixel font (optional) -->
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#008080; /* teal classic */
+    --win-bg:#c0c0c0;
+    --win-border:#000;
+    --titlebar:#000080; /* navy */
+    --title-text:#fff;
+    --taskbar:#c0c0c0;
+    --button-bg:#e0e0e0;
+    --mono: 'Press Start 2P', monospace;
+  }
+  html,body{height:100%;margin:0;font-family:var(--mono);background:var(--bg);-webkit-font-smoothing:none;}
+  /* Desktop */
+  .desktop{position:relative;height:100vh;overflow:hidden;padding:18px;box-sizing:border-box;}
+  /* Desktop icons grid */
+  .icons{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:14px;width:420px;}
+  .icon{cursor:default;text-align:center;user-select:none;}
+  .icon img{width:64px;height:64px;display:block;margin:0 auto;border:2px solid transparent;}
+  .icon .label{font-size:11px;margin-top:6px;word-break:break-word;}
+  .icon.focus img{border-color:#fff;box-shadow:4px 4px 0 rgba(0,0,0,0.4);}
+  /* Window */
+  .win{width:420px;min-height:160px;background:var(--win-bg);border:2px solid var(--win-border);box-shadow:6px 6px 0 rgba(0,0,0,0.4);position:absolute;top:80px;left:80px;user-select:none;display:flex;flex-direction:column;overflow:hidden;}
+  .titlebar{height:28px;background:var(--titlebar);color:var(--title-text);display:flex;align-items:center;padding:0 6px;gap:6px;box-sizing:border-box;cursor:grab;}
+  .titlebar .title{flex:1;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .titlebar .controls{display:flex;gap:4px;}
+  .btn{width:18px;height:18px;border:2px solid var(--win-border);background:var(--button-bg);display:inline-flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;}
+  .content{padding:10px;font-size:12px;color:#000;flex:1;overflow:auto;}
+  textarea{width:100%;height:120px;box-sizing:border-box;font-family:inherit;font-size:12px;resize:vertical;}
+  /* Taskbar */
+  .taskbar{position:fixed;left:0;right:0;bottom:0;height:46px;background:var(--taskbar);border-top:2px solid #000;display:flex;align-items:center;gap:8px;padding:6px;box-sizing:border-box;z-index:9999;}
+  .start{height:34px;min-width:84px;border:2px solid #000;display:flex;align-items:center;padding:6px;gap:8px;background:#e8e8e8;cursor:pointer;user-select:none;}
+  .start img{height:18px;display:block;}
+  .start-menu{position:fixed;left:8px;bottom:54px;width:240px;background:var(--win-bg);border:2px solid var(--win-border);display:none;padding:8px;box-shadow:6px 6px 0 rgba(0,0,0,0.4);z-index:9999;}
+  .start-menu button{display:block;width:100%;margin:6px 0;padding:6px;text-align:left;font-size:12px;cursor:pointer;border:2px solid var(--win-border);background:#e8e8e8;}
+  /* Task buttons */
+  #task-buttons{display:flex;gap:6px;flex:1;align-items:center;}
+  .task-btn{border:2px solid #000;padding:6px;min-width:110px;cursor:pointer;background:#e8e8e8;font-size:12px;}
+  /* Focus */
+  .win.focus{box-shadow:8px 8px 0 rgba(0,0,0,0.6);transform:translateZ(0);}
+  /* Small screens */
+  @media (max-width:620px){
+    .icons{width:100%;}
+    .win{width:92%;left:4%;}
+  }
+  /* Simple cursor for touch */
+  .touch .titlebar{cursor:grab;}
+  /* Hint */
+  .hint{position:fixed;right:12px;bottom:64px;background:#fff1;padding:8px;border:2px solid #000;border-radius:4px;font-size:11px;opacity:0.9;}
+</style>
+</head>
+<body>
+
+<div class="desktop" id="desktop">
+  <!-- Desktop icons -->
+  <div class="icons" id="icons">
+    <div class="icon" data-file="notepad" tabindex="0" title="Notepad — double click">
+      <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'><rect width='64' height='64' fill='%23f3f3f3' stroke='%23000000' stroke-width='2'/><rect x='8' y='10' width='48' height='44' fill='%23ffffff' stroke='%23000000' stroke-width='2'/><rect x='12' y='14' width='40' height='6' fill='%23000000'/></svg>" alt="notepad icon">
+      <div class="label">Notepad</div>
+    </div>
+
+    <div class="icon" data-file="game" tabindex="0" title="Guess Number — double click">
+      <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'><rect width='64' height='64' fill='%23f3f3f3' stroke='%23000000' stroke-width='2'/><circle cx='32' cy='28' r='14' fill='%23e07a2d' stroke='%23000000' stroke-width='2'/><text x='32' y='33' font-family='sans-serif' font-size='16' fill='%23fff' text-anchor='middle'>?</text></svg>" alt="game icon">
+      <div class="label">Guess Number</div>
+    </div>
+
+    <div class="icon" data-file="about" tabindex="0" title="About — double click">
+      <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'><rect width='64' height='64' fill='%23f3f3f3' stroke='%23000000' stroke-width='2'/><circle cx='32' cy='32' r='14' fill='%23b0c4de' stroke='%23000000' stroke-width='2'/><text x='32' y='36' font-family='sans-serif' font-size='20' fill='%23000' text-anchor='middle'>i</text></svg>" alt="about icon">
+      <div class="label">About</div>
+    </div>
+  </div>
+
+  <!-- Window: Notepad -->
+  <div class="win" id="win-notepad" style="left:40px;top:40px;display:none;">
+    <div class="titlebar" data-win="notepad">
+      <div class="title">Notepad - notes.txt</div>
+      <div class="controls">
+        <div class="btn btn-min" data-action="min">—</div>
+        <div class="btn btn-close" data-action="close">✕</div>
+      </div>
+    </div>
+    <div class="content">
+      <textarea id="notes" placeholder="Напиши что-нибудь..."></textarea>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button id="save-notes" class="btn" style="padding:6px 8px;border-width:2px;">Save</button>
+        <button id="clear-notes" class="btn" style="padding:6px 8px;border-width:2px;">Clear</button>
+        <div style="flex:1;"></div>
+        <span style="font-size:11px;color:#333;align-self:center">Saved locally</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Window: Game -->
+  <div class="win" id="win-game" style="left:520px;top:80px;display:none;">
+    <div class="titlebar" data-win="game">
+      <div class="title">Game - Guess the number</div>
+      <div class="controls">
+        <div class="btn btn-min" data-action="min">—</div>
+        <div class="btn btn-close" data-action="close">✕</div>
+      </div>
+    </div>
+    <div class="content">
+      <div id="game-root">
+        <div>Я загадал число от <strong>1</strong> до <strong>100</strong>. Попробуй угадать!</div>
+        <div style="margin-top:8px;">
+          <input id="g-input" type="number" min="1" max="100" style="width:120px;padding:6px;font-family:inherit;font-size:12px;" />
+          <button id="g-btn" class="btn" style="padding:6px 8px;border-width:2px;">Угадать</button>
+        </div>
+        <div id="g-res" style="margin-top:10px;font-weight:700;"></div>
+        <div style="margin-top:8px;"><button id="g-new" class="btn" style="padding:6px 8px;border-width:2px;">Новая игра</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Window: About -->
+  <div class="win" id="win-about" style="left:220px;top:140px;display:none;width:360px;">
+    <div class="titlebar" data-win="about">
+      <div class="title">About</div>
+      <div class="controls">
+        <div class="btn btn-min" data-action="min">—</div>
+        <div class="btn btn-close" data-action="close">✕</div>
+      </div>
+    </div>
+    <div class="content">
+      <p>Retro Windows95-style demo site.<br>Single-file HTML — готов для GitHub Pages.</p>
+      <p>Двойной клик по иконке — открыть окно. Перетаскивай окна мышью или пальцем.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Taskbar -->
+<div class="taskbar" id="taskbar">
+  <div class="start" id="start-button" aria-haspopup="true" aria-expanded="false" role="button" tabindex="0">
+    <!-- Start icon (svg inline) -->
+    <img alt="start" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%23007acc'/><g fill='%23fff'><rect x='64' y='64' width='160' height='160'/><rect x='288' y='64' width='160' height='160'/><rect x='64' y='288' width='160' height='160'/><rect x='288' y='288' width='160' height='160'/></g></svg>">
+    <div>Start</div>
+  </div>
+
+  <div id="task-buttons"></div>
+  <div style="width:8px;"></div>
+</div>
+
+<!-- Start menu -->
+<div class="start-menu" id="start-menu" role="menu" aria-hidden="true">
+  <button data-open="notepad">Open Notepad</button>
+  <button data-open="game">Play Guess Number</button>
+  <button data-open="about">About</button>
+</div>
+
+<div class="hint" id="hint" style="display:none">Double-click icon — открыть</div>
+
+<script>
+/* =========================
+   Config: подставь свои звуки (опционально)
+   ========================= */
+const SOUND_CLICK = ""; // e.g. "https://your.host/click.wav"
+const SOUND_WIN = "";   // e.g. "https://your.host/win.wav"
+function playSound(url){ if(!url) return; const a=new Audio(url); a.play().catch(()=>{}); }
+
+/* =========================
+   Utilities: drag, z-index, focus
+   ========================= */
+const desktop = document.getElementById('desktop');
+let z = 100;
+
+function bringToFront(el){
+  z += 1;
+  el.style.zIndex = z;
+  document.querySelectorAll('.win').forEach(w => w.classList.remove('focus'));
+  el.classList.add('focus');
+}
+
+/* make window draggable (mouse + touch) */
+function makeDraggable(winEl){
+  const title = winEl.querySelector('.titlebar');
+  let dragging = false;
+  let offsetX=0, offsetY=0;
+
+  function startDrag(clientX, clientY){
+    dragging = true;
+    bringToFront(winEl);
+    const rect = winEl.getBoundingClientRect();
+    offsetX = clientX - rect.left;
+    offsetY = clientY - rect.top;
+    title.style.cursor = 'grabbing';
+  }
+  function doDrag(clientX, clientY){
+    if(!dragging) return;
+    let nx = clientX - offsetX;
+    let ny = clientY - offsetY;
+    // bounds
+    const pad = 6;
+    const maxX = window.innerWidth - winEl.offsetWidth - pad;
+    const maxY = window.innerHeight - winEl.offsetHeight - pad - 46; // taskbar
+    if(nx < pad) nx = pad;
+    if(ny < pad) ny = pad;
+    if(nx > maxX) nx = maxX;
+    if(ny > maxY) ny = maxY;
+    winEl.style.left = nx + 'px';
+    winEl.style.top = ny + 'px';
+  }
+  function endDrag(){
+    dragging = false;
+    title.style.cursor = 'grab';
+  }
+
+  title.addEventListener('mousedown', (e)=> {
+    e.preventDefault();
+    startDrag(e.clientX, e.clientY);
+    function onMove(ev){ doDrag(ev.clientX, ev.clientY); }
+    function onUp(){ endDrag(); document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  // touch support
+  title.addEventListener('touchstart', (e)=> {
+    if(e.touches.length !== 1) return;
+    const t = e.touches[0];
+    startDrag(t.clientX, t.clientY);
+    function onMove(ev){ const t2 = ev.touches[0]; if(t2) doDrag(t2.clientX, t2.clientY); }
+    function onEnd(){ endDrag(); document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onEnd); }
+    document.addEventListener('touchmove', onMove, {passive:false});
+    document.addEventListener('touchend', onEnd);
+  });
+
+  // focus on click
+  winEl.addEventListener('mousedown', ()=> bringToFront(winEl));
+}
+
+/* Initialize draggables for all windows */
+document.querySelectorAll('.win').forEach(w => {
+  makeDraggable(w);
+  // create task button
+  createTaskButton(w);
+});
+
+/* =========================
+   Taskbar buttons
+   ========================= */
+const taskButtons = document.getElementById('task-buttons');
+function createTaskButton(winEl){
+  const id = winEl.id;
+  const name = winEl.querySelector('.title').innerText;
+  const btn = document.createElement('button');
+  btn.className = 'task-btn';
+  btn.textContent = name;
+  btn.dataset.for = id;
+  btn.addEventListener('click', ()=>{
+    if(winEl.style.display === 'none' || getComputedStyle(winEl).display === 'none'){
+      winEl.style.display = 'flex';
+      bringToFront(winEl);
+    } else {
+      winEl.style.display = 'none';
+    }
+    playSound(SOUND_CLICK);
+  });
+  taskButtons.appendChild(btn);
+}
+function removeTaskButton(id){
+  const btn = taskButtons.querySelector(`[data-for="${id}"]`);
+  if(btn) btn.remove();
+}
+
+/* =========================
+   Window controls (min/close)
+   ========================= */
+document.querySelectorAll('.win .btn').forEach(b => {
+  b.addEventListener('click', (e) => {
+    const act = b.dataset.action;
+    const win = b.closest('.win');
+    if(act === 'close'){
+      win.style.display = 'none';
+      playSound(SOUND_CLICK);
+    } else if(act === 'min'){
+      win.style.display = 'none';
+      playSound(SOUND_CLICK);
+    }
+    e.stopPropagation();
+  });
+});
+
+/* Double-click icons to open windows */
+const icons = document.querySelectorAll('.icon');
+icons.forEach(icon => {
+  let clicks = 0, timer = null;
+  icon.addEventListener('click', (e) => {
+    clicks++;
+    if(clicks === 1){
+      timer = setTimeout(()=>{ clicks = 0; clearTimeout(timer); timer = null; }, 350);
+    } else if(clicks === 2){
+      // double click: open file
+      const file = icon.dataset.file;
+      openWindow(file);
+      clicks = 0;
+      if(timer){ clearTimeout(timer); timer = null; }
+    }
+  });
+
+  // keyboard: Enter opens (accessibility)
+  icon.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' || e.key === ' ') { openWindow(icon.dataset.file); e.preventDefault(); }
+  });
+});
+
+/* Start menu */
+const startButton = document.getElementById('start-button');
+const startMenu = document.getElementById('start-menu');
+startButton.addEventListener('click', (e) => {
+  const visible = startMenu.style.display === 'block';
+  startMenu.style.display = visible ? 'none' : 'block';
+  startButton.setAttribute('aria-expanded', String(!visible));
+  playSound(SOUND_CLICK);
+});
+document.addEventListener('click', (e) => {
+  if(!startMenu.contains(e.target) && !startButton.contains(e.target)) startMenu.style.display = 'none';
+});
+
+/* Start menu open */
+startMenu.querySelectorAll('button[data-open]').forEach(b => {
+  b.addEventListener('click', () => {
+    const id = b.dataset.open;
+    openWindow(id);
+    startMenu.style.display = 'none';
+    playSound(SOUND_CLICK);
+  });
+});
+
+/* openWindow helper */
+function openWindow(name){
+  const id = 'win-' + name;
+  const w = document.getElementById(id);
+  if(!w) return;
+  w.style.display = 'flex';
+  bringToFront(w);
+}
+
+/* Show hint on desktop about double click */
+const hint = document.getElementById('hint');
+let hintTimer = setTimeout(()=>{ hint.style.display = 'block'; }, 1200);
+desktop.addEventListener('mousemove', ()=>{ hint.style.display = 'none'; if(hintTimer){ clearTimeout(hintTimer); hintTimer=null;} });
+
+/* =========================
+   Notepad: save/load
+   ========================= */
+const notesEl = document.getElementById('notes');
+const saveBtn = document.getElementById('save-notes');
+const clearBtn = document.getElementById('clear-notes');
+const NOTEPAD_KEY = 'win95_notes_v1';
+window.addEventListener('load', ()=> {
+  const saved = localStorage.getItem(NOTEPAD_KEY);
+  if(saved) notesEl.value = saved;
+});
+saveBtn.addEventListener('click', ()=> {
+  const v = notesEl.value;
+  localStorage.setItem(NOTEPAD_KEY, v);
+  // flash saved
+  saveBtn.textContent = 'Saved ✓';
+  setTimeout(()=> saveBtn.textContent = 'Save', 900);
+  playSound(SOUND_CLICK);
+});
+clearBtn.addEventListener('click', ()=> {
+  notesEl.value = '';
+  localStorage.removeItem(NOTEPAD_KEY);
+  playSound(SOUND_CLICK);
+});
+
+/* =========================
+   Guess number game
+   ========================= */
+let secret = Math.floor(Math.random()*100)+1;
+const inEl = document.getElementById('g-input');
+const btnGuess = document.getElementById('g-btn');
+const outEl = document.getElementById('g-res');
+const newBtn = document.getElementById('g-new');
+
+btnGuess.addEventListener('click', () => {
+  const v = Number(inEl.value);
+  if(!v || v < 1 || v > 100){ outEl.textContent = 'Введите число 1–100'; return; }
+  if(v === secret){ outEl.textContent = 'Правильно! 🎉'; playSound(SOUND_WIN); }
+  else if(v < secret){ outEl.textContent = 'Больше →'; playSound(SOUND_CLICK); }
+  else { outEl.textContent = 'Меньше ←'; playSound(SOUND_CLICK); }
+});
+newBtn.addEventListener('click', ()=>{ secret = Math.floor(Math.random()*100)+1; outEl.textContent = 'Новая игра!'; inEl.value = ''; playSound(SOUND_CLICK); });
+
+/* =========================
+   Accessibility & touch class
+   ========================= */
+function isTouchDevice(){ return (('ontouchstart' in window) || navigator.maxTouchPoints>0 || navigator.msMaxTouchPoints>0); }
+if(isTouchDevice()) document.documentElement.classList.add('touch');
+
+/* =========================
+   Initial positioning and small tweaks
+   ========================= */
+window.addEventListener('load', ()=>{
+  // ensure windows inside viewport
+  document.querySelectorAll('.win').forEach((w, i) => {
+    if(!w.style.left) w.style.left = (40 + i*20) + 'px';
+    if(!w.style.top) w.style.top = (40 + i*20) + 'px';
+  });
+});
+
+/* Prevent accidental pinch-zoom on mobile for retro feeling */
+document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+</script>
+
+</body>
+</html>
