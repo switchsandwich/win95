@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Retro Win95 — Desktop: Minesweeper & Snake</title>
+<title>Retro Win95 — Desktop: Games & Apps</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -17,13 +17,29 @@
   --mono:'Press Start 2P', monospace;
   --icon-size:72px;
   --cell-size:28px;
+  --text-color:#000;
 }
-html,body{height:100%;margin:0;font-family:var(--mono);background:var(--bg);-webkit-font-smoothing:none;overflow:hidden;}
+/* Light / Dark themes use data-theme on html */
+html[data-theme="light"]{
+  --bg:#008080;
+  --win-bg:#c0c0c0;
+  --titlebar:#000080;
+  --title-text:#fff;
+  --text-color:#000;
+}
+html[data-theme="dark"]{
+  --bg:#001f1f;
+  --win-bg:#2b2b2b;
+  --titlebar:#222;
+  --title-text:#eee;
+  --text-color:#eee;
+}
+html,body{height:100%;margin:0;font-family:var(--mono);background:var(--bg);-webkit-font-smoothing:none;overflow:hidden;color:var(--text-color);}
 .desktop{position:relative;height:100vh;width:100vw;box-sizing:border-box;}
 .icons-area{position:absolute;left:18px;top:18px;right:260px;bottom:84px;pointer-events:auto;}
 .icon{position:absolute;width:var(--icon-size);text-align:center;cursor:grab;user-select:none;padding:6px;box-sizing:border-box;}
 .icon img{width:48px;height:48px;display:block;margin:0 auto;border:2px solid transparent;}
-.icon .label{font-size:11px;margin-top:6px;word-break:break-word;color:#111;}
+.icon .label{font-size:11px;margin-top:6px;word-break:break-word;color:var(--text-color);}
 .icon:active{cursor:grabbing;}
 .icon.focus img{border-color:#fff;box-shadow:4px 4px 0 rgba(0,0,0,0.4);}
 
@@ -33,14 +49,14 @@ html,body{height:100%;margin:0;font-family:var(--mono);background:var(--bg);-web
 .titlebar .title{flex:1;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .titlebar .controls{display:flex;gap:4px;}
 .btn{width:18px;height:18px;border:2px solid var(--win-border);background:var(--button-bg);display:inline-flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;}
-.content{padding:10px;font-size:12px;color:#000;flex:1;overflow:auto;}
+.content{padding:10px;font-size:12px;color:var(--text-color);flex:1;overflow:auto;}
 textarea{width:100%;height:120px;box-sizing:border-box;font-family:inherit;font-size:12px;resize:vertical;}
 
 /* Taskbar */
 .taskbar{position:fixed;left:0;right:0;bottom:0;height:64px;background:var(--taskbar);border-top:2px solid #000;display:flex;align-items:center;gap:8px;padding:8px;box-sizing:border-box;z-index:9999;}
 .start{height:48px;min-width:84px;border:2px solid #000;display:flex;align-items:center;padding:6px;gap:8px;background:#e8e8e8;cursor:pointer;user-select:none;}
 .start img{height:24px;display:block;}
-.start-menu{position:fixed;left:8px;bottom:74px;width:240px;background:var(--win-bg);border:2px solid var(--win-border);display:none;padding:8px;box-shadow:6px 6px 0 rgba(0,0,0,0.4);z-index:9999;}
+.start-menu{position:fixed;left:8px;bottom:74px;width:260px;background:var(--win-bg);border:2px solid var(--win-border);display:none;padding:8px;box-shadow:6px 6px 0 rgba(0,0,0,0.4);z-index:9999;}
 .start-menu button{display:block;width:100%;margin:6px 0;padding:6px;text-align:left;font-size:12px;cursor:pointer;border:2px solid var(--win-border);background:#e8e8e8;}
 #task-buttons{display:flex;gap:6px;flex:1;align-items:center;overflow:auto;padding-left:6px;height:48px;}
 
@@ -54,6 +70,11 @@ textarea{width:100%;height:120px;box-sizing:border-box;font-family:inherit;font-
 /* Snake */
 #snake-canvas{background:#111;border:4px solid #000;display:block;margin:8px auto;border-radius:2px;}
 
+/* Arkanoid / Tetris / TicTacToe / Calculator styles */
+#arkanoid-canvas, #tetris-canvas{display:block;margin:8px auto;border:4px solid #000;background:#111;}
+#ttt-board button{width:64px;height:64px;font-size:28px;margin:2px;}
+.calc-display{width:100%;height:44px;font-size:18px;box-sizing:border-box;padding:6px;font-family:var(--mono);}
+
 /* Utils */
 .controls-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;}
 .small{font-size:11px;padding:6px;border:2px solid #000;background:#e8e8e8;cursor:pointer;}
@@ -63,50 +84,77 @@ textarea{width:100%;height:120px;box-sizing:border-box;font-family:inherit;font-
 </head>
 <body>
 
-<div class="desktop" id="desktop">
+<div class="desktop" id="desktop" role="application">
   <div class="icons-area" id="iconsArea" aria-label="Desktop icons">
+    <!-- Icons (positions saved in localStorage) -->
     <div class="icon" id="icon-notepad" data-file="notepad" tabindex="0" style="left:0;top:0;">
       <img alt="Notepad" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='64' height='64' fill='%23f3f3f3' stroke='%23000000' stroke-width='2'/><rect x='8' y='10' width='48' height='44' fill='%23ffffff' stroke='%23000000' stroke-width='2'/><rect x='12' y='14' width='40' height='6' fill='%23000000'/></svg>">
-      <div class="label">Notepad</div>
+      <div class="label" data-i18n="notepad">Notepad</div>
     </div>
 
     <div class="icon" id="icon-game" data-file="game" tabindex="0" style="left:100px;top:0;">
       <img alt="Guess" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='64' height='64' fill='%23f3f3f3' stroke='%23000000' stroke-width='2'/><circle cx='32' cy='28' r='14' fill='%23e07a2d' stroke='%23000000' stroke-width='2'/><text x='32' y='33' font-family='sans-serif' font-size='16' fill='%23fff' text-anchor='middle'>?</text></svg>">
-      <div class="label">Guess Number</div>
+      <div class="label" data-i18n="guess">Guess Number</div>
     </div>
 
     <div class="icon" id="icon-mines" data-file="mines" tabindex="0" style="left:200px;top:0;">
       <img alt="Mines" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='64' height='64' fill='%23f3f3f3' stroke='%23000000' stroke-width='2'/><g transform='translate(5,5)'><rect x='10' y='10' width='26' height='26' fill='%23b0b0b0' stroke='%23000000' stroke-width='2'/><circle cx='28' cy='28' r='6' fill='%23000000'/></g></svg>">
-      <div class="label">Minesweeper</div>
+      <div class="label" data-i18n="mines">Minesweeper</div>
     </div>
 
     <div class="icon" id="icon-snake" data-file="snake" tabindex="0" style="left:300px;top:0;">
       <img alt="Snake" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='64' height='64' fill='%23f3f3f3' stroke='%23000000' stroke-width='2'/><rect x='14' y='22' width='12' height='12' fill='%2300a000'/><rect x='26' y='22' width='12' height='12' fill='%2300a000'/><rect x='38' y='22' width='12' height='12' fill='%2300a000'/></svg>">
-      <div class="label">Snake</div>
+      <div class="label" data-i18n="snake">Snake</div>
     </div>
 
-    <div class="icon" id="icon-developer" data-file="developer" tabindex="0" style="left:400px;top:0;">
-      <img alt="Dev" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='64' height='64' fill='%23f3f3f3' stroke='%23000000' stroke-width='2'/><text x='32' y='38' font-family='sans-serif' font-size='18' fill='%23000' text-anchor='middle'>dev</text></svg>">
-      <div class="label">Developer</div>
+    <div class="icon" id="icon-ark" data-file="arkanoid" tabindex="0" style="left:400px;top:0;">
+      <img alt="Arkanoid" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='64' height='64' fill='%23f3f3f3' stroke='%23000000' stroke-width='2'/><rect x='8' y='18' width='48' height='12' fill='%23007acc'/></svg>">
+      <div class="label" data-i18n="arkanoid">Arkanoid</div>
     </div>
+
+    <div class="icon" id="icon-tetris" data-file="tetris" tabindex="0" style="left:0;top:100px;">
+      <img alt="Tetris" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='64' height='64' fill='%23f3f3f3' stroke='%23000000' stroke-width='2'/><rect x='10' y='14' width='12' height='12' fill='%23ffcc00'/><rect x='22' y='14' width='12' height='12' fill='%2300ccff'/></svg>">
+      <div class="label" data-i18n="tetris">Tetris</div>
+    </div>
+
+    <div class="icon" id="icon-ttt" data-file="ttt" tabindex="0" style="left:100px;top:100px;">
+      <img alt="TicTacToe" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='64' height='64' fill='%23f3f3f3' stroke='%23000000' stroke-width='2'/><text x='32' y='36' font-family='sans-serif' font-size='20' fill='%23000' text-anchor='middle'>T/T</text></svg>">
+      <div class="label" data-i18n="ttt">Tic-Tac-Toe</div>
+    </div>
+
+    <div class="icon" id="icon-calc" data-file="calc" tabindex="0" style="left:200px;top:100px;">
+      <img alt="Calc" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='64' height='64' fill='%23f3f3f3' stroke='%23000000' stroke-width='2'/><text x='32' y='36' font-family='sans-serif' font-size='20' fill='%23000' text-anchor='middle'>=</text></svg>">
+      <div class="label" data-i18n="calc">Calculator</div>
+    </div>
+
+    <div class="icon" id="icon-settings" data-file="settings" tabindex="0" style="left:300px;top:100px;">
+      <img alt="Settings" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='64' height='64' fill='%23f3f3f3' stroke='%23000000' stroke-width='2'/><circle cx='32' cy='32' r='12' fill='%23000000'/></svg>">
+      <div class="label" data-i18n="settings">Settings</div>
+    </div>
+
+    <div class="icon" id="icon-developer" data-file="developer" tabindex="0" style="left:400px;top:100px;">
+      <img alt="Dev" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='64' height='64' fill='%23f3f3f3' stroke='%23000000' stroke-width='2'/><text x='32' y='38' font-family='sans-serif' font-size='18' fill='%23000' text-anchor='middle'>dev</text></svg>">
+      <div class="label" data-i18n="developer">Developer</div>
+    </div>
+
   </div>
 
   <!-- Notepad -->
   <div class="win" id="win-notepad" style="left:40px;top:40px;display:none;">
     <div class="titlebar" data-win="notepad">
-      <div class="title">Notepad - notes.txt</div>
+      <div class="title" data-i18n="notepad_title">Notepad - notes.txt</div>
       <div class="controls">
         <div class="btn btn-min" data-action="min">—</div>
         <div class="btn btn-close" data-action="close">✕</div>
       </div>
     </div>
     <div class="content">
-      <textarea id="notes" placeholder="Напиши что-нибудь..."></textarea>
+      <textarea id="notes" placeholder="Напиши что-нибудь..." data-i18n-placeholder="notes_placeholder"></textarea>
       <div class="controls-row">
-        <button id="save-notes" class="small">Save</button>
-        <button id="clear-notes" class="small">Clear</button>
+        <button id="save-notes" class="small" data-i18n="save">Save</button>
+        <button id="clear-notes" class="small" data-i18n="clear">Clear</button>
         <div style="flex:1"></div>
-        <div style="font-size:11px;color:#333">Saved to localStorage</div>
+        <div style="font-size:11px;color:#333" data-i18n="saved_local">Saved to localStorage</div>
       </div>
     </div>
   </div>
@@ -114,27 +162,27 @@ textarea{width:100%;height:120px;box-sizing:border-box;font-family:inherit;font-
   <!-- Guess Number -->
   <div class="win" id="win-game" style="left:540px;top:80px;display:none;">
     <div class="titlebar" data-win="game">
-      <div class="title">Game - Guess the number</div>
+      <div class="title" data-i18n="guess_title">Game - Guess the number</div>
       <div class="controls">
         <div class="btn btn-min" data-action="min">—</div>
         <div class="btn btn-close" data-action="close">✕</div>
       </div>
     </div>
     <div class="content">
-      <div>Я загадал число от <strong>1</strong> до <strong>100</strong>. Попробуй угадать!</div>
+      <div data-i18n="guess_instr">Я загадал число от <strong>1</strong> до <strong>100</strong>. Попробуй угадать!</div>
       <div style="margin-top:8px;">
         <input id="g-input" type="number" min="1" max="100" style="width:120px;padding:6px;font-family:inherit;font-size:12px;" />
-        <button id="g-btn" class="small">Угадать</button>
+        <button id="g-btn" class="small" data-i18n="guess">Угадать</button>
       </div>
       <div id="g-res" style="margin-top:10px;font-weight:700;"></div>
-      <div style="margin-top:8px;"><button id="g-new" class="small">Новая игра</button></div>
+      <div style="margin-top:8px;"><button id="g-new" class="small" data-i18n="new_game">Новая игра</button></div>
     </div>
   </div>
 
   <!-- Minesweeper -->
   <div class="win" id="win-mines" style="left:200px;top:140px;display:none;width:640px;">
     <div class="titlebar" data-win="mines">
-      <div class="title">Minesweeper</div>
+      <div class="title" data-i18n="mines">Minesweeper</div>
       <div class="controls">
         <div class="btn btn-min" data-action="min">—</div>
         <div class="btn btn-close" data-action="close">✕</div>
@@ -142,22 +190,22 @@ textarea{width:100%;height:120px;box-sizing:border-box;font-family:inherit;font-
     </div>
     <div class="content" id="mines-content">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <label>Difficulty:
+        <label data-i18n="difficulty">Difficulty:
           <select id="mines-diff" class="small" style="padding:4px;">
             <option value="beginner">Beginner (9×9, 10)</option>
             <option value="intermediate">Intermediate (16×16, 40)</option>
             <option value="expert">Expert (16×30, 99)</option>
           </select>
         </label>
-        <button id="mines-new" class="small">New</button>
-        <button id="mines-reset" class="small">Reset</button>
+        <button id="mines-new" class="small" data-i18n="new">New</button>
+        <button id="mines-reset" class="small" data-i18n="reset">Reset</button>
         <div style="flex:1"></div>
         <div id="mines-status" style="font-weight:700"></div>
       </div>
       <div id="mines-board-wrap" style="margin-top:10px;overflow:auto;max-height:420px;"></div>
-      <div style="margin-top:8px;font-size:11px;color:#333">Left click to reveal, right click to flag. On touch use Flag Mode.</div>
+      <div style="margin-top:8px;font-size:11px;color:#333" data-i18n="mines_help">Left click to reveal, right click to flag. On touch use Flag Mode.</div>
       <div style="margin-top:6px;">
-        <button id="mines-flagmode" class="small">Flag Mode: Off</button>
+        <button id="mines-flagmode" class="small" data-i18n="flag_mode">Flag Mode: Off</button>
       </div>
     </div>
   </div>
@@ -165,7 +213,7 @@ textarea{width:100%;height:120px;box-sizing:border-box;font-family:inherit;font-
   <!-- Snake -->
   <div class="win" id="win-snake" style="left:480px;top:220px;display:none;width:420px;">
     <div class="titlebar" data-win="snake">
-      <div class="title">Snake</div>
+      <div class="title" data-i18n="snake">Snake</div>
       <div class="controls">
         <div class="btn btn-min" data-action="min">—</div>
         <div class="btn btn-close" data-action="close">✕</div>
@@ -173,15 +221,92 @@ textarea{width:100%;height:120px;box-sizing:border-box;font-family:inherit;font-
     </div>
     <div class="content">
       <div style="text-align:center">
-        <canvas id="snake-canvas" width="360" height="360"></canvas>
+        <canvas id="snake-canvas" width="360" height="360" aria-label="Snake game"></canvas>
         <div class="controls-row" style="justify-content:center;margin-top:8px">
-          <button id="snake-start" class="small">Start</button>
-          <button id="snake-pause" class="small">Pause</button>
-          <button id="snake-restart" class="small">Restart</button>
+          <button id="snake-start" class="small" data-i18n="start">Start</button>
+          <button id="snake-pause" class="small" data-i18n="pause">Pause</button>
+          <button id="snake-restart" class="small" data-i18n="restart">Restart</button>
           <div style="width:12px"></div>
           <div id="snake-score" style="font-weight:700">Score: 0</div>
         </div>
-        <div style="margin-top:8px;font-size:11px;color:#333">Arrows / WASD control. Swipe on mobile.</div>
+        <div style="margin-top:8px;font-size:11px;color:#333" data-i18n="snake_help">Arrows / WASD control. Swipe on mobile.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Arkanoid -->
+  <div class="win" id="win-ark" style="left:220px;top:120px;display:none;width:520px;">
+    <div class="titlebar" data-win="arkanoid">
+      <div class="title" data-i18n="arkanoid">Arkanoid</div>
+      <div class="controls">
+        <div class="btn btn-min" data-action="min">—</div>
+        <div class="btn btn-close" data-action="close">✕</div>
+      </div>
+    </div>
+    <div class="content" style="text-align:center">
+      <canvas id="arkanoid-canvas" width="480" height="320"></canvas>
+      <div class="controls-row" style="justify-content:center">
+        <button id="ark-start" class="small" data-i18n="start">Start</button>
+        <button id="ark-reset" class="small" data-i18n="reset">Reset</button>
+        <div id="ark-lives" style="font-weight:700">Lives: 3</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tetris -->
+  <div class="win" id="win-tetris" style="left:440px;top:120px;display:none;width:420px;">
+    <div class="titlebar" data-win="tetris">
+      <div class="title" data-i18n="tetris">Tetris</div>
+      <div class="controls">
+        <div class="btn btn-min" data-action="min">—</div>
+        <div class="btn btn-close" data-action="close">✕</div>
+      </div>
+    </div>
+    <div class="content" style="text-align:center">
+      <canvas id="tetris-canvas" width="240" height="400"></canvas>
+      <div class="controls-row" style="justify-content:center">
+        <button id="tetris-start" class="small" data-i18n="start">Start</button>
+        <button id="tetris-reset" class="small" data-i18n="reset">Reset</button>
+        <div id="tetris-score" style="font-weight:700">Score: 0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tic-Tac-Toe -->
+  <div class="win" id="win-ttt" style="left:120px;top:320px;display:none;width:300px;">
+    <div class="titlebar" data-win="ttt">
+      <div class="title" data-i18n="ttt">Tic-Tac-Toe</div>
+      <div class="controls">
+        <div class="btn btn-min" data-action="min">—</div>
+        <div class="btn btn-close" data-action="close">✕</div>
+      </div>
+    </div>
+    <div class="content" style="text-align:center">
+      <div id="ttt-board" style="display:grid;grid-template-columns:repeat(3,80px);gap:6px;justify-content:center;"></div>
+      <div class="controls-row" style="justify-content:center;margin-top:8px">
+        <button id="ttt-new" class="small" data-i18n="new">New</button>
+        <div id="ttt-info" style="font-weight:700"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calculator -->
+  <div class="win" id="win-calc" style="left:420px;top:360px;display:none;width:320px;">
+    <div class="titlebar" data-win="calc">
+      <div class="title" data-i18n="calc">Calculator</div>
+      <div class="controls">
+        <div class="btn btn-min" data-action="min">—</div>
+        <div class="btn btn-close" data-action="close">✕</div>
+      </div>
+    </div>
+    <div class="content">
+      <input id="calc-display" class="calc-display" readonly />
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px;">
+        <button class="small" data-c="7">7</button><button class="small" data-c="8">8</button><button class="small" data-c="9">9</button><button class="small" data-c="/">/</button>
+        <button class="small" data-c="4">4</button><button class="small" data-c="5">5</button><button class="small" data-c="6">6</button><button class="small" data-c="*">*</button>
+        <button class="small" data-c="1">1</button><button class="small" data-c="2">2</button><button class="small" data-c="3">3</button><button class="small" data-c="-">-</button>
+        <button class="small" data-c="0">0</button><button class="small" data-c=".">.</button><button id="calc-eq" class="small">=</button><button class="small" data-c="+">+</button>
+        <button id="calc-clear" class="small" style="grid-column:span=4;">C</button>
       </div>
     </div>
   </div>
@@ -189,31 +314,183 @@ textarea{width:100%;height:120px;box-sizing:border-box;font-family:inherit;font-
 </div>
 
 <!-- Taskbar -->
-<div class="taskbar" id="taskbar">
+<div class="taskbar" id="taskbar" role="toolbar">
   <div class="start" id="start-button" aria-haspopup="true" aria-expanded="false" role="button" tabindex="0">
     <img alt="start" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%23007acc'/><g fill='%23fff'><rect x='64' y='64' width='160' height='160'/><rect x='288' y='64' width='160' height='160'/><rect x='64' y='288' width='160' height='160'/><rect x='288' y='288' width='160' height='160'/></g></svg>">
-    <div>Start</div>
+    <div data-i18n="start">Start</div>
   </div>
-  <div id="task-buttons"></div>
+  <div id="task-buttons" role="tablist"></div>
 </div>
 
 <!-- Start menu -->
 <div class="start-menu" id="start-menu" role="menu" aria-hidden="true">
-  <button data-open="notepad">Open Notepad</button>
-  <button data-open="game">Play Guess Number</button>
-  <button data-open="mines">Minesweeper</button>
-  <button data-open="snake">Snake</button>
-  <button data-open="about">About</button>
+  <button data-open="notepad" data-i18n="open_notepad">Open Notepad</button>
+  <button data-open="game" data-i18n="play_guess">Play Guess Number</button>
+  <button data-open="mines" data-i18n="mines">Minesweeper</button>
+  <button data-open="snake" data-i18n="snake">Snake</button>
+  <button data-open="arkanoid" data-i18n="arkanoid">Arkanoid</button>
+  <button data-open="tetris" data-i18n="tetris">Tetris</button>
+  <button data-open="ttt" data-i18n="ttt">Tic-Tac-Toe</button>
+  <button data-open="calc" data-i18n="calc">Calculator</button>
+  <button data-open="settings" data-i18n="settings">Settings</button>
+  <button data-open="about" data-i18n="about">About</button>
 </div>
 
-<div class="hint" id="hint" style="display:none">Double-click icon — открыть</div>
+<div class="hint" id="hint" style="display:none" data-i18n="hint">Double-click icon — открыть</div>
+
+<!-- First-run language modal -->
+<div id="lang-modal" style="position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:99999;">
+  <div style="background:#fff;padding:18px;border:4px solid #000;text-align:center;width:320px;">
+    <div style="font-weight:700;margin-bottom:8px;">Choose language / Выберите язык</div>
+    <div style="display:flex;gap:8px;justify-content:center;">
+      <button id="lang-ru" class="small">Русский</button>
+      <button id="lang-en" class="small">English</button>
+    </div>
+  </div>
+</div>
 
 <script>
-/* ============ FIXED SCRIPT =============
-   Key change: declare taskButtons before we call createTaskButton()
-========================================*/
+/* =============================
+   Settings / Localization / Storage keys
+   ============================= */
+const STORAGE = {
+  ICONS: 'win95_icons_v3',
+  NOTES: 'win95_notes_v1',
+  THEME: 'win95_theme_v1',
+  BG: 'win95_bg_v1',
+  LANG: 'win95_lang_v1',
+  MINES: 'win95_mines_v1',
+  SNAKE: 'win95_snake_v1'
+};
 
-/* utility: z-index & focus */
+const i18n = {
+  en: {
+    notepad: 'Notepad', notepad_title: 'Notepad - notes.txt', notes_placeholder: 'Write something...',
+    save: 'Save', clear: 'Clear', saved_local: 'Saved to localStorage',
+    guess: 'Guess', guess_title: 'Game - Guess the number', guess_instr: 'I picked a number between 1 and 100. Try to guess!',
+    new_game: 'New game',
+    mines: 'Minesweeper', difficulty: 'Difficulty', new: 'New', reset: 'Reset', flag_mode: 'Flag Mode: Off', mines_help: 'Left click to reveal, right click to flag. On touch use Flag Mode.',
+    snake: 'Snake', start: 'Start', pause: 'Pause', restart: 'Restart', snake_help: 'Arrows / WASD control. Swipe on mobile.',
+    arkanoid: 'Arkanoid', tetris: 'Tetris', ttt: 'Tic-Tac-Toe', calc: 'Calculator', settings: 'Settings',
+    start: 'Start', open_notepad: 'Open Notepad', play_guess: 'Play Guess Number', about: 'About',
+    hint: 'Double-click icon — open', developer: 'Developer',
+    mines_status0: 'Mines: ', mines_status1: ' Flags left: ',
+    reset_all: 'Reset all data', change_lang: 'Change language', change_theme: 'Theme', bg_color: 'Wallpaper color',
+    ttt_new: 'New', ttt_x_wins: 'X wins!', ttt_o_wins: 'O wins!', ttt_draw: "Draw!",
+    calc_error: 'Error'
+  },
+  ru: {
+    notepad: 'Блокнот', notepad_title: 'Блокнот - notes.txt', notes_placeholder: 'Напиши что-нибудь...',
+    save: 'Save', clear: 'Clear', saved_local: 'Сохранено локально',
+    guess: 'Угадать', guess_title: 'Игра - Угадай число', guess_instr: 'Я загадал число от 1 до 100. Попробуй угадать!',
+    new_game: 'Новая игра',
+    mines: 'Сапёр', difficulty: 'Сложность', new: 'Новая', reset: 'Сброс', flag_mode: 'Режим флагов: Выкл', mines_help: 'Левый клик — открыть, правый — флаг. На тачах используйте Flag Mode.',
+    snake: 'Змейка', start: 'Старт', pause: 'Пауза', restart: 'Рестарт', snake_help: 'Стрелки / WASD. Свайп на мобильных.',
+    arkanoid: 'Арканоид', tetris: 'Тетрис', ttt: 'Крестики-нолики', calc: 'Калькулятор', settings: 'Настройки',
+    start: 'Пуск', open_notepad: 'Открыть блокнот', play_guess: 'Угнать число', about: 'О сайте',
+    hint: 'Двойной клик по иконке — открыть', developer: 'Developer',
+    mines_status0: 'Mines: ', mines_status1: ' Флагов осталось: ',
+    reset_all: 'Сбросить все данные', change_lang: 'Сменить язык', change_theme: 'Тема', bg_color: 'Цвет обоев',
+    ttt_new: 'Новая', ttt_x_wins: 'X победил!', ttt_o_wins: 'O победил!', ttt_draw: "Ничья!",
+    calc_error: 'Ошибка'
+  }
+};
+
+let LANG = localStorage.getItem(STORAGE.LANG) || null;
+if(!LANG){
+  document.getElementById('lang-modal').style.display = 'flex';
+} else {
+  applyLang(LANG);
+}
+document.getElementById('lang-ru').addEventListener('click', ()=>{ chooseLang('ru'); });
+document.getElementById('lang-en').addEventListener('click', ()=>{ chooseLang('en'); });
+
+function chooseLang(l){
+  LANG = l;
+  localStorage.setItem(STORAGE.LANG, l);
+  applyLang(l);
+  document.getElementById('lang-modal').style.display = 'none';
+}
+
+function applyLang(l){
+  document.documentElement.lang = l === 'ru' ? 'ru' : 'en';
+  // translate elements with data-i18n or data-i18n-placeholder
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key = el.getAttribute('data-i18n');
+    if(i18n[l] && i18n[l][key]) el.textContent = i18n[l][key];
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+    const key = el.getAttribute('data-i18n-placeholder');
+    if(i18n[l] && i18n[l][key]) el.placeholder = i18n[l][key];
+  });
+  // dynamic mines status refresh if needed
+  updateMinesStatus();
+}
+
+/* =============================
+   Theme & Wallpaper color
+   ============================= */
+const savedTheme = localStorage.getItem(STORAGE.THEME) || 'light';
+document.documentElement.setAttribute('data-theme', savedTheme);
+const savedBg = localStorage.getItem(STORAGE.BG);
+if(savedBg) document.body.style.background = savedBg;
+
+/* small settings window creation */
+const settingsWinHTML = `
+  <div class="titlebar" data-win="settings"><div class="title">Settings</div><div class="controls"><div class="btn btn-min" data-action="min">—</div><div class="btn btn-close" data-action="close">✕</div></div></div>
+  <div class="content">
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <label>Language: <select id="settings-lang"><option value="ru">Русский</option><option value="en">English</option></select></label>
+      <label>Theme: <select id="settings-theme"><option value="light">Light</option><option value="dark">Dark</option></select></label>
+      <label>Wallpaper color: <input type="color" id="settings-bg"></label>
+      <button id="settings-reset" class="small">Reset all data</button>
+      <div style="font-size:11px;color:#333">Changes saved to localStorage</div>
+    </div>
+  </div>
+`;
+const settingsWin = document.createElement('div');
+settingsWin.className='win'; settingsWin.id='win-settings'; settingsWin.style.left='360px'; settingsWin.style.top='320px'; settingsWin.style.display='none';
+settingsWin.innerHTML = settingsWinHTML;
+document.body.appendChild(settingsWin);
+makeDraggable(settingsWin);
+createTaskButton(settingsWin);
+
+/* populate settings controls on open */
+function openSettings(){
+  openWindow('settings');
+  document.getElementById('settings-lang').value = localStorage.getItem(STORAGE.LANG) || 'ru';
+  document.getElementById('settings-theme').value = localStorage.getItem(STORAGE.THEME) || 'light';
+  document.getElementById('settings-bg').value = savedBg || '#008080';
+}
+document.body.addEventListener('click', (e)=> {
+  if(e.target && e.target.id === 'settings-reset'){
+    if(confirm('Reset all local data?')) {
+      localStorage.clear();
+      location.reload();
+    }
+  }
+});
+document.body.addEventListener('change', (e)=>{
+  if(e.target && e.target.id === 'settings-theme'){
+    const v = e.target.value;
+    localStorage.setItem(STORAGE.THEME, v);
+    document.documentElement.setAttribute('data-theme', v);
+  }
+  if(e.target && e.target.id === 'settings-lang'){
+    const v = e.target.value;
+    localStorage.setItem(STORAGE.LANG, v);
+    applyLang(v);
+  }
+  if(e.target && e.target.id === 'settings-bg'){
+    const v = e.target.value;
+    localStorage.setItem(STORAGE.BG, v);
+    document.body.style.background = v;
+  }
+});
+
+/* =============================
+   Taskbar / Windows helpers
+   ============================= */
 let z = 100;
 function bringToFront(el){
   z += 1;
@@ -222,20 +499,24 @@ function bringToFront(el){
   el.classList.add('focus');
 }
 
-/* cache DOM references that are used by createTaskButton */
+/* Ensure taskButtons declared before use */
 const taskButtons = document.getElementById('task-buttons');
 
-/* createTaskButton function (uses taskButtons above) */
 function createTaskButton(winEl){
   const id = winEl.id;
-  const name = winEl.querySelector('.title').innerText;
-  // if button for this window already exists, skip
+  const nameEl = winEl.querySelector('.title');
+  const name = nameEl ? nameEl.innerText : id;
   if(taskButtons.querySelector(`[data-for="${id}"]`)) return;
   const btn = document.createElement('button');
-  btn.className = 'task-btn'; btn.textContent = name; btn.dataset.for = id;
-  btn.addEventListener('click', ()=>{
-    if(winEl.style.display === 'none' || getComputedStyle(winEl).display === 'none'){ winEl.style.display = 'flex'; bringToFront(winEl); }
-    else { winEl.style.display = 'none'; }
+  btn.className='task-btn';
+  btn.textContent = name;
+  btn.dataset.for = id;
+  btn.addEventListener('click', ()=> {
+    if(winEl.style.display === 'none' || getComputedStyle(winEl).display === 'none'){
+      winEl.style.display = 'flex'; bringToFront(winEl);
+    } else {
+      winEl.style.display = 'none';
+    }
   });
   taskButtons.appendChild(btn);
 }
@@ -243,6 +524,7 @@ function createTaskButton(winEl){
 /* Drag windows */
 function makeDraggable(winEl){
   const title = winEl.querySelector('.titlebar');
+  if(!title) return;
   let dragging=false, offsetX=0, offsetY=0;
   function startDrag(clientX, clientY){
     dragging=true; bringToFront(winEl);
@@ -267,7 +549,6 @@ function makeDraggable(winEl){
     function mu(){ endDrag(); document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); }
     document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
   });
-  // touch
   title.addEventListener('touchstart', (e)=>{
     if(e.touches.length!==1) return;
     const t = e.touches[0]; startDrag(t.clientX, t.clientY);
@@ -278,36 +559,42 @@ function makeDraggable(winEl){
   winEl.addEventListener('mousedown', ()=> bringToFront(winEl));
 }
 
-/* initialize windows and task buttons AFTER taskButtons is defined */
-document.querySelectorAll('.win').forEach((w)=> { makeDraggable(w); createTaskButton(w); });
+/* Initialize draggables + task buttons for existing windows */
+document.querySelectorAll('.win').forEach(w => { makeDraggable(w); createTaskButton(w); });
 
-/* Window controls */
-document.querySelectorAll('.win .btn').forEach(b => {
+/* Window control buttons */
+document.querySelectorAll('.win .btn').forEach(b=>{
   b.addEventListener('click', (e)=>{
     const act = b.dataset.action; const win = b.closest('.win');
-    if(act === 'close'){ win.style.display = 'none'; }
-    else if(act === 'min'){ win.style.display = 'none'; }
+    if(act==='close'){ win.style.display = 'none'; }
+    else if(act==='min'){ win.style.display = 'none'; }
     e.stopPropagation();
   });
 });
 
-/* Start menu */
+/* Start menu handling */
 const startButton = document.getElementById('start-button');
 const startMenu = document.getElementById('start-menu');
-startButton.addEventListener('click', () => {
+startButton.addEventListener('click', (e)=>{
   const vis = startMenu.style.display === 'block';
   startMenu.style.display = vis ? 'none' : 'block';
   startButton.setAttribute('aria-expanded', String(!vis));
 });
-document.addEventListener('click', (e)=> {
+document.addEventListener('click', (e)=>{
   if(!startMenu.contains(e.target) && !startButton.contains(e.target)) startMenu.style.display = 'none';
 });
-startMenu.querySelectorAll('button[data-open]').forEach(b => b.addEventListener('click', ()=> { openWindow(b.dataset.open); startMenu.style.display='none'; }));
+startMenu.querySelectorAll('button[data-open]').forEach(b => {
+  b.addEventListener('click', ()=> { openWindow(b.dataset.open); startMenu.style.display='none'; });
+});
 
 /* openWindow helper */
 function openWindow(name){
   if(name === 'developer'){ window.open('https://switchsandwich.github.io', '_blank', 'noopener'); return; }
-  const map = { notepad:'win-notepad', game:'win-game', mines:'win-mines', snake:'win-snake', about:'win-about' };
+  const map = {
+    notepad:'win-notepad', game:'win-game', mines:'win-mines', snake:'win-snake',
+    arkanoid:'win-ark', tetris:'win-tetris', ttt:'win-ttt', calc:'win-calc',
+    settings:'win-settings', about:'win-about'
+  };
   const id = map[name];
   if(!id) return;
   const w = document.getElementById(id);
@@ -315,32 +602,29 @@ function openWindow(name){
   w.style.display = 'flex'; bringToFront(w);
 }
 
-/* Icons drag + save positions */
-const iconsArea = document.getElementById('iconsArea');
+/* =============================
+   Desktop icons: drag & save positions
+   ============================= */
 const icons = Array.from(document.querySelectorAll('.icon'));
-const ICONS_KEY = 'win95_icons_pos_v2';
 function loadIconPositions(){
   try{
-    const raw = localStorage.getItem(ICONS_KEY);
+    const raw = localStorage.getItem(STORAGE.ICONS);
     if(!raw) return;
     const obj = JSON.parse(raw);
     icons.forEach(ic => {
       const pos = obj[ic.id];
-      if(pos && typeof pos.x === 'number' && typeof pos.y === 'number'){
-        ic.style.left = pos.x + 'px'; ic.style.top = pos.y + 'px';
-      }
+      if(pos){ ic.style.left = pos.x + 'px'; ic.style.top = pos.y + 'px'; }
     });
   }catch(e){ console.warn('load pos err', e); }
 }
 function saveIconPositions(){
   const obj = {};
   icons.forEach(ic => { obj[ic.id] = { x: parseInt(ic.style.left || 0,10), y: parseInt(ic.style.top || 0,10) }; });
-  localStorage.setItem(ICONS_KEY, JSON.stringify(obj));
+  localStorage.setItem(STORAGE.ICONS, JSON.stringify(obj));
 }
 loadIconPositions();
 
 icons.forEach(ic => {
-  // keyboard open / move
   ic.addEventListener('keydown', (e)=>{
     if(e.key === 'Enter' || e.key === ' '){ openIcon(ic); e.preventDefault(); }
     if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){
@@ -356,7 +640,6 @@ icons.forEach(ic => {
     }
   });
 
-  // mouse drag
   let dragging=false, startX=0, startY=0, origX=0, origY=0;
   ic.addEventListener('mousedown', (e)=>{
     dragging=true; ic.classList.add('focus');
@@ -370,7 +653,6 @@ icons.forEach(ic => {
     e.preventDefault();
   });
 
-  // touch drag
   ic.addEventListener('touchstart', (e)=>{
     if(e.touches.length !== 1) return;
     const t = e.touches[0];
@@ -385,7 +667,6 @@ icons.forEach(ic => {
     e.preventDefault();
   });
 
-  // double click handling
   let clicks = 0, timer = null;
   ic.addEventListener('click', (e)=>{
     clicks++;
@@ -400,10 +681,7 @@ icons.forEach(ic => {
 function openIcon(ic){
   const file = ic.dataset.file;
   if(file === 'developer'){ window.open('https://switchsandwich.github.io', '_blank', 'noopener'); return; }
-  if(file === 'mines') openWindow('mines');
-  else if(file === 'snake') openWindow('snake');
-  else if(file === 'notepad') openWindow('notepad');
-  else if(file === 'game') openWindow('game');
+  openWindow(file);
 }
 
 /* hint */
@@ -411,21 +689,25 @@ const hint = document.getElementById('hint');
 let hintTimer = setTimeout(()=>{ hint.style.display = 'block'; }, 1200);
 document.getElementById('desktop').addEventListener('mousemove', ()=>{ hint.style.display='none'; if(hintTimer){ clearTimeout(hintTimer); hintTimer=null; } });
 
-/* Notepad save/load */
+/* =============================
+   Notepad save/load
+   ============================= */
 const notesEl = document.getElementById('notes');
 const saveBtn = document.getElementById('save-notes');
 const clearBtn = document.getElementById('clear-notes');
-const NOTEPAD_KEY = 'win95_notes_v1';
 window.addEventListener('load', ()=> {
-  const saved = localStorage.getItem(NOTEPAD_KEY); if(saved) notesEl.value = saved;
+  const saved = localStorage.getItem(STORAGE.NOTES); if(saved) notesEl.value = saved;
 });
 saveBtn.addEventListener('click', ()=> {
-  const v = notesEl.value; localStorage.setItem(NOTEPAD_KEY, v);
-  saveBtn.textContent = 'Saved ✓'; setTimeout(()=> saveBtn.textContent = 'Save', 900);
+  const v = notesEl.value; localStorage.setItem(STORAGE.NOTES, v);
+  saveBtn.textContent = (i18n[LANG] && i18n[LANG].save) ? i18n[LANG].save + ' ✓' : 'Saved ✓';
+  setTimeout(()=> saveBtn.textContent = (i18n[LANG] && i18n[LANG].save) ? i18n[LANG].save : 'Save', 900);
 });
-clearBtn.addEventListener('click', ()=> { notesEl.value=''; localStorage.removeItem(NOTEPAD_KEY); });
+clearBtn.addEventListener('click', ()=> { notesEl.value=''; localStorage.removeItem(STORAGE.NOTES); });
 
-/* Guess number */
+/* =============================
+   Guess number (simple)
+   ============================= */
 let secret = Math.floor(Math.random()*100)+1;
 const inEl = document.getElementById('g-input');
 const btnGuess = document.getElementById('g-btn');
@@ -433,14 +715,16 @@ const outEl = document.getElementById('g-res');
 const newBtn = document.getElementById('g-new');
 btnGuess.addEventListener('click', ()=>{
   const v = Number(inEl.value);
-  if(!v || v<1 || v>100){ outEl.textContent = 'Введите число 1–100'; return; }
-  if(v===secret){ outEl.textContent = 'Правильно! 🎉'; }
-  else if(v < secret) outEl.textContent = 'Больше →';
-  else outEl.textContent = 'Меньше ←';
+  if(!v || v<1 || v>100){ outEl.textContent = (i18n[LANG] && i18n[LANG].guess) ? i18n[LANG].guess + ': 1–100' : 'Введите число 1–100'; return; }
+  if(v===secret){ outEl.textContent = 'Correct! 🎉'; }
+  else if(v < secret) outEl.textContent = 'Higher →';
+  else outEl.textContent = 'Lower ←';
 });
-newBtn.addEventListener('click', ()=>{ secret = Math.floor(Math.random()*100)+1; outEl.textContent='Новая игра!'; inEl.value=''; });
+newBtn.addEventListener('click', ()=>{ secret = Math.floor(Math.random()*100)+1; outEl.textContent = (i18n[LANG] && i18n[LANG].new_game) ? i18n[LANG].new_game : 'New game!'; inEl.value=''; });
 
-/* ========== MINESWEEPER ========== */
+/* =============================
+   MINESWEEPER
+   ============================= */
 const minesWrap = document.getElementById('mines-board-wrap');
 const minesStatus = document.getElementById('mines-status');
 const minesNew = document.getElementById('mines-new');
@@ -565,7 +849,7 @@ function revealCell(r,c){
   if(cell.mine){
     st.gameOver = true;
     revealAllMines(r,c);
-    minesStatus.textContent = 'BOOM! Game Over';
+    minesStatus.textContent = (i18n[LANG] && i18n[LANG].mines_status0) ? i18n[LANG].mines_status0 + st.mines : 'BOOM! Game Over';
     return;
   }
   if(cell.adj === 0){
@@ -595,7 +879,7 @@ function checkMinesWin(){
   const total = st.rows*st.cols;
   if(st.revealedCount === total - st.mines && !st.gameOver){
     st.gameOver = true;
-    minesStatus.textContent = 'You win! 🎉';
+    minesStatus.textContent = (i18n[LANG] && i18n[LANG].mines_status0) ? 'You win! 🎉' : 'You win! 🎉';
     for(let r=0;r<st.rows;r++) for(let c=0;c<st.cols;c++){
       const cell = st.cells[r][c]; const el = document.querySelector(`[data-r='${r}'][data-c='${c}']`);
       if(!el) continue;
@@ -606,7 +890,9 @@ function checkMinesWin(){
 
 function updateMinesStatus(){
   if(!minesState) return;
-  minesStatus.textContent = `Mines: ${minesState.mines}  Flags left: ${minesState.flagsLeft}`;
+  const base = (i18n[LANG] && i18n[LANG].mines_status0) ? i18n[LANG].mines_status0 : 'Mines: ';
+  const suf = (i18n[LANG] && i18n[LANG].mines_status1) ? i18n[LANG].mines_status1 : ' Flags left: ';
+  minesStatus.textContent = `${base}${minesState.mines}${suf}${minesState.flagsLeft}`;
 }
 
 function renderMines(){
@@ -644,123 +930,421 @@ minesReset.addEventListener('click', ()=> {
 minesDiff.addEventListener('change', ()=> { newMines(minesDiff.value); });
 minesFlagModeBtn.addEventListener('click', ()=>{
   minesFlagMode = !minesFlagMode;
-  minesFlagModeBtn.textContent = 'Flag Mode: ' + (minesFlagMode ? 'On' : 'Off');
+  const txt = (i18n[LANG] && i18n[LANG].flag_mode) ? i18n[LANG].flag_mode : 'Flag Mode: ';
+  minesFlagModeBtn.textContent = txt + (minesFlagMode ? 'On' : 'Off');
 });
 
 newMines('beginner');
 
-/* ========== SNAKE ========== */
-const canvas = document.getElementById('snake-canvas');
-const ctx = canvas.getContext('2d');
+/* =============================
+   SNAKE (fixed restart bug)
+   ============================= */
+const snakeCanvas = document.getElementById('snake-canvas');
+const snakeCtx = snakeCanvas.getContext('2d');
 const scoreEl = document.getElementById('snake-score');
 const btnStart = document.getElementById('snake-start');
 const btnPause = document.getElementById('snake-pause');
 const btnRestart = document.getElementById('snake-restart');
 
 let gridCount = 20;
-let cellSize = Math.floor(canvas.width / gridCount);
-let snake = [{x:10,y:10}];
-let dir = {x:0,y:0};
-let food = {x:15,y:15};
-let gameInterval = null;
-let speed = 120;
-let running = false;
-let score = 0;
+let sCellSize = Math.floor(snakeCanvas.width / gridCount);
+let snakeBody = [{x:10,y:10}];
+let sDir = {x:0,y:0};
+let sFood = {x:15,y:15};
+let sInterval = null;
+let sSpeedDefault = 120;
+let sSpeed = sSpeedDefault;
+let sRunning = false;
+let sScore = 0;
 
 function resetSnake(){
   gridCount = 20;
-  cellSize = Math.floor(canvas.width / gridCount);
-  snake = [{x:10,y:10}];
-  dir = {x:0,y:0};
+  sCellSize = Math.floor(snakeCanvas.width / gridCount);
+  snakeBody = [{x:10,y:10}];
+  sDir = {x:0,y:0};
   placeFood();
-  running = false; score = 0; updateScore(); drawSnake();
+  sRunning = false; sScore = 0; updateScore(); drawSnake();
+  // ensure interval cleared
+  if(sInterval){ clearInterval(sInterval); sInterval = null; }
+  sSpeed = sSpeedDefault;
 }
-
 function placeFood(){
   const max = gridCount;
   let ok=false;
   while(!ok){
     const fx = Math.floor(Math.random()*max);
     const fy = Math.floor(Math.random()*max);
-    ok = !snake.some(s => s.x===fx && s.y===fy);
-    if(ok){ food.x = fx; food.y = fy; }
+    ok = !snakeBody.some(s => s.x===fx && s.y===fy);
+    if(ok){ sFood.x = fx; sFood.y = fy; }
   }
 }
-
 function drawSnake(){
-  ctx.fillStyle = '#111'; ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle = '#ff0000'; ctx.fillRect(food.x*cellSize, food.y*cellSize, cellSize, cellSize);
-  ctx.fillStyle = '#00ff66';
-  snake.forEach((s, idx) => { ctx.fillRect(s.x*cellSize, s.y*cellSize, cellSize-1, cellSize-1); });
+  snakeCtx.fillStyle = '#111'; snakeCtx.fillRect(0,0,snakeCanvas.width,snakeCanvas.height);
+  snakeCtx.fillStyle = '#ff0000'; snakeCtx.fillRect(sFood.x*sCellSize, sFood.y*sCellSize, sCellSize, sCellSize);
+  snakeCtx.fillStyle = '#00ff66';
+  snakeBody.forEach((s)=> snakeCtx.fillRect(s.x*sCellSize, s.y*sCellSize, sCellSize-1, sCellSize-1));
 }
-
 function stepSnake(){
-  if(dir.x===0 && dir.y===0) return;
-  const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+  if(sDir.x===0 && sDir.y===0) return;
+  const head = { x: snakeBody[0].x + sDir.x, y: snakeBody[0].y + sDir.y };
   if(head.x < 0) head.x = gridCount - 1;
   if(head.x >= gridCount) head.x = 0;
   if(head.y < 0) head.y = gridCount - 1;
   if(head.y >= gridCount) head.y = 0;
-  if(snake.some(s=>s.x===head.x && s.y===head.y)){ running = false; clearInterval(gameInterval); gameInterval = null; alert('Game over! Score: ' + score); return; }
-  snake.unshift(head);
-  if(head.x === food.x && head.y === food.y){ score += 1; updateScore(); placeFood(); } else { snake.pop(); }
+  if(snakeBody.some(s=>s.x===head.x && s.y===head.y)){
+    sRunning = false; if(sInterval){ clearInterval(sInterval); sInterval=null; }
+    alert('Game over! Score: ' + sScore);
+    return;
+  }
+  snakeBody.unshift(head);
+  if(head.x === sFood.x && head.y === sFood.y){ sScore += 1; updateScore(); placeFood(); } else { snakeBody.pop(); }
   drawSnake();
 }
-
-function startSnake(){ if(running) return; running=true; gameInterval = setInterval(stepSnake, speed); }
-function pauseSnake(){ if(gameInterval){ clearInterval(gameInterval); gameInterval = null; running=false; } }
+function startSnake(){ if(sRunning) return; sRunning=true; if(sInterval) clearInterval(sInterval); sInterval = setInterval(stepSnake, sSpeed); }
+function pauseSnake(){ if(sInterval){ clearInterval(sInterval); sInterval = null; sRunning=false; } }
 function restartSnake(){ pauseSnake(); resetSnake(); startSnake(); }
-function updateScore(){ scoreEl.textContent = 'Score: ' + score; }
+function updateScore(){ scoreEl.textContent = 'Score: ' + sScore; }
 
 document.addEventListener('keydown', (e)=>{
   const k = e.key.toLowerCase();
-  if(k === 'arrowup' || k === 'w'){ if(dir.y!==1) dir = {x:0,y:-1}; }
-  if(k === 'arrowdown' || k === 's'){ if(dir.y!==-1) dir = {x:0,y:1}; }
-  if(k === 'arrowleft' || k === 'a'){ if(dir.x!==1) dir = {x:-1,y:0}; }
-  if(k === 'arrowright' || k === 'd'){ if(dir.x!==-1) dir = {x:1,y:0}; }
+  if(k === 'arrowup' || k === 'w'){ if(sDir.y!==1) sDir = {x:0,y:-1}; }
+  if(k === 'arrowdown' || k === 's'){ if(sDir.y!==-1) sDir = {x:0,y:1}; }
+  if(k === 'arrowleft' || k === 'a'){ if(sDir.x!==1) sDir = {x:-1,y:0}; }
+  if(k === 'arrowright' || k === 'd'){ if(sDir.x!==-1) sDir = {x:1,y:0}; }
 });
 
 btnStart.addEventListener('click', ()=> startSnake());
 btnPause.addEventListener('click', ()=> pauseSnake());
-btnRestart.addEventListener('click', ()=> { resetSnake(); startSnake(); });
+btnRestart.addEventListener('click', ()=> { restartSnake(); });
 
-let touchStartX=0, touchStartY=0;
-canvas.addEventListener('touchstart', (e)=>{ const t = e.touches[0]; touchStartX = t.clientX; touchStartY = t.clientY; });
-canvas.addEventListener('touchend', (e)=> {
-  const t = e.changedTouches[0]; const dx = t.clientX - touchStartX, dy = t.clientY - touchStartY;
+let sTouchStartX=0, sTouchStartY=0;
+snakeCanvas.addEventListener('touchstart', (e)=>{ const t = e.touches[0]; sTouchStartX = t.clientX; sTouchStartY = t.clientY; });
+snakeCanvas.addEventListener('touchend', (e)=> {
+  const t = e.changedTouches[0]; const dx = t.clientX - sTouchStartX, dy = t.clientY - sTouchStartY;
   if(Math.abs(dx) > Math.abs(dy)){
-    if(dx > 20 && dir.x!==-1) dir = {x:1,y:0};
-    if(dx < -20 && dir.x!==1) dir = {x:-1,y:0};
+    if(dx > 20 && sDir.x!==-1) sDir = {x:1,y:0};
+    if(dx < -20 && sDir.x!==1) sDir = {x:-1,y:0};
   } else {
-    if(dy > 20 && dir.y!==-1) dir = {x:0,y:1};
-    if(dy < -20 && dir.y!==1) dir = {x:0,y:-1};
+    if(dy > 20 && sDir.y!==-1) sDir = {x:0,y:1};
+    if(dy < -20 && sDir.y!==1) sDir = {x:0,y:-1};
   }
 });
 
 resetSnake();
 drawSnake();
 
-/* prevent contextmenu on mines board */
+/* =============================
+   Arkanoid - basic implementation
+   ============================= */
+const arkCanvas = document.getElementById('arkanoid-canvas');
+const arkCtx = arkCanvas.getContext('2d');
+const arkStartBtn = document.getElementById('ark-start');
+const arkResetBtn = document.getElementById('ark-reset');
+const arkLivesEl = document.getElementById('ark-lives');
+
+let arkInterval = null;
+let arkPaddle = { x: arkCanvas.width/2 - 40, y: arkCanvas.height - 20, w: 80, h: 10 };
+let arkBall = { x: arkCanvas.width/2, y: arkCanvas.height - 30, vx: 3, vy: -3, r: 6 };
+let arkBricks = [];
+let arkRows = 5, arkCols = 8;
+let arkBrickW = Math.floor((arkCanvas.width - 40)/arkCols);
+let arkLives = 3;
+function initArk(){
+  arkBricks = [];
+  for(let r=0;r<arkRows;r++){
+    for(let c=0;c<arkCols;c++){
+      arkBricks.push({x:20 + c*arkBrickW, y:20 + r*20, w: arkBrickW-6, h:16, alive:true});
+    }
+  }
+  arkPaddle.x = arkCanvas.width/2 - arkPaddle.w/2;
+  arkBall.x = arkCanvas.width/2; arkBall.y = arkCanvas.height - 30; arkBall.vx = 3; arkBall.vy = -3;
+  arkLives = 3; arkLivesEl.textContent = 'Lives: ' + arkLives;
+  drawArk();
+}
+function drawArk(){
+  arkCtx.fillStyle = '#111'; arkCtx.fillRect(0,0,arkCanvas.width, arkCanvas.height);
+  // bricks
+  arkBricks.forEach(b => { if(b.alive){ arkCtx.fillStyle = '#ffcc00'; arkCtx.fillRect(b.x,b.y,b.w,b.h); arkCtx.strokeStyle='#000'; arkCtx.strokeRect(b.x,b.y,b.w,b.h); }});
+  // paddle
+  arkCtx.fillStyle = '#00aaff'; arkCtx.fillRect(arkPaddle.x, arkPaddle.y, arkPaddle.w, arkPaddle.h);
+  // ball
+  arkCtx.beginPath(); arkCtx.fillStyle = '#fff'; arkCtx.arc(arkBall.x, arkBall.y, arkBall.r, 0, Math.PI*2); arkCtx.fill();
+}
+function stepArk(){
+  arkBall.x += arkBall.vx; arkBall.y += arkBall.vy;
+  // walls
+  if(arkBall.x - arkBall.r < 0 || arkBall.x + arkBall.r > arkCanvas.width) arkBall.vx *= -1;
+  if(arkBall.y - arkBall.r < 0) arkBall.vy *= -1;
+  if(arkBall.y + arkBall.r > arkCanvas.height){
+    arkLives--; arkLivesEl.textContent = 'Lives: ' + arkLives;
+    if(arkLives <= 0){ clearInterval(arkInterval); arkInterval = null; alert('Game over'); return; }
+    arkBall.x = arkCanvas.width/2; arkBall.y = arkCanvas.height - 30; arkBall.vy = -3;
+  }
+  // paddle collision
+  if(arkBall.y + arkBall.r >= arkPaddle.y && arkBall.x >= arkPaddle.x && arkBall.x <= arkPaddle.x + arkPaddle.w){
+    arkBall.vy *= -1; // simple bounce
+    // adjust vx by where it hits
+    const hit = (arkBall.x - (arkPaddle.x + arkPaddle.w/2)) / (arkPaddle.w/2);
+    arkBall.vx = hit * 4;
+  }
+  // bricks
+  arkBricks.forEach(b => {
+    if(b.alive && arkBall.x > b.x && arkBall.x < b.x + b.w && arkBall.y - arkBall.r < b.y + b.h && arkBall.y + arkBall.r > b.y){
+      b.alive = false; arkBall.vy *= -1;
+    }
+  });
+  // paddle follow mouse
+  drawArk();
+}
+arkCanvas.addEventListener('mousemove', (e)=> {
+  const rect = arkCanvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  arkPaddle.x = Math.max(0, Math.min(arkCanvas.width - arkPaddle.w, mx - arkPaddle.w/2));
+});
+arkCanvas.addEventListener('touchmove', (e)=> {
+  const t = e.touches[0]; const rect = arkCanvas.getBoundingClientRect(); const mx = t.clientX - rect.left;
+  arkPaddle.x = Math.max(0, Math.min(arkCanvas.width - arkPaddle.w, mx - arkPaddle.w/2));
+  e.preventDefault();
+}, {passive:false});
+arkStartBtn.addEventListener('click', ()=> {
+  if(arkInterval) return;
+  arkInterval = setInterval(stepArk, 20);
+});
+arkResetBtn.addEventListener('click', ()=> {
+  if(arkInterval){ clearInterval(arkInterval); arkInterval=null; }
+  initArk();
+});
+initArk();
+
+/* =============================
+   TETRIS - simplified implementation
+   ============================= */
+const tCanvas = document.getElementById('tetris-canvas');
+const tCtx = tCanvas.getContext('2d');
+const tRows = 20, tCols = 10;
+const tCell = 24;
+let tGrid = [];
+let tInterval = null;
+let tSpeed = 500;
+let tCurrent = null;
+let tNext = null;
+let tScore = 0;
+
+const TETRIMINOS = {
+  I: { cells: [[1,1,1,1]], color:'#00f0f0' },
+  O: { cells: [[1,1],[1,1]], color:'#f0f000' },
+  T: { cells: [[0,1,0],[1,1,1]], color:'#a000f0' },
+  S: { cells: [[0,1,1],[1,1,0]], color:'#00f000' },
+  Z: { cells: [[1,1,0],[0,1,1]], color:'#f00000' },
+  J: { cells: [[1,0,0],[1,1,1]], color:'#0000f0' },
+  L: { cells: [[0,0,1],[1,1,1]], color:'#f08000' }
+};
+function newTGrid(){ tGrid = Array.from({length:tRows},()=>Array(tCols).fill(0)); }
+function drawT(){
+  tCtx.fillStyle='#111'; tCtx.fillRect(0,0,tCanvas.width,tCanvas.height);
+  for(let r=0;r<tRows;r++) for(let c=0;c<tCols;c++){
+    if(tGrid[r][c]){ tCtx.fillStyle = tGrid[r][c]; tCtx.fillRect(c*tCell, r*tCell, tCell-1, tCell-1); }
+  }
+  if(tCurrent) drawPiece(tCurrent);
+}
+function drawPiece(p){
+  for(let r=0;r<p.shape.length;r++) for(let c=0;c<p.shape[r].length;c++){
+    if(p.shape[r][c]){
+      tCtx.fillStyle = p.color;
+      tCtx.fillRect((p.x+c)*tCell, (p.y+r)*tCell, tCell-1, tCell-1);
+    }
+  }
+}
+function spawnPiece(){
+  const keys = Object.keys(TETRIMINOS);
+  const k = keys[Math.floor(Math.random()*keys.length)];
+  const proto = TETRIMINOS[k];
+  const shape = proto.cells.map(row=>row.slice());
+  tCurrent = { shape, x: Math.floor((tCols-shape[0].length)/2), y:0, color: proto.color };
+}
+function rotate(shape){
+  const H = shape.length, W = shape[0].length;
+  const out = Array.from({length:W},()=>Array(H).fill(0));
+  for(let r=0;r<H;r++) for(let c=0;c<W;c++) out[c][H-1-r]=shape[r][c];
+  return out;
+}
+function canMove(shape,x,y){
+  for(let r=0;r<shape.length;r++) for(let c=0;c<shape[r].length;c++){
+    if(!shape[r][c]) continue;
+    const rr = y + r, cc = x + c;
+    if(rr<0 || cc<0 || cc>=tCols) return false;
+    if(rr>=tRows) return false;
+    if(tGrid[rr][cc]) return false;
+  }
+  return true;
+}
+function fixPiece(){
+  const p = tCurrent;
+  for(let r=0;r<p.shape.length;r++) for(let c=0;c<p.shape[r].length;c++){
+    if(p.shape[r][c]) tGrid[p.y+r][p.x+c] = p.color;
+  }
+  clearLines();
+  spawnPiece();
+  if(!canMove(tCurrent.shape,tCurrent.x,tCurrent.y)) {
+    clearInterval(tInterval); tInterval=null; alert('Game over'); 
+  }
+}
+function clearLines(){
+  for(let r=tRows-1;r>=0;r--){
+    if(tGrid[r].every(cell=>cell!==0)){
+      tGrid.splice(r,1); tGrid.unshift(Array(tCols).fill(0)); tScore += 100; document.getElementById('tetris-score').textContent = 'Score: '+tScore; r++;
+    }
+  }
+}
+function stepT(){
+  if(!tCurrent) return;
+  if(canMove(tCurrent.shape, tCurrent.x, tCurrent.y+1)) tCurrent.y++;
+  else fixPiece();
+  drawT();
+}
+document.getElementById('tetris-start').addEventListener('click', ()=> {
+  if(tInterval) return;
+  if(!tCurrent){ newTGrid(); spawnPiece(); }
+  tInterval = setInterval(stepT, tSpeed);
+});
+document.getElementById('tetris-reset').addEventListener('click', ()=> {
+  if(tInterval){ clearInterval(tInterval); tInterval=null; }
+  newTGrid(); tCurrent=null; tScore=0; document.getElementById('tetris-score').textContent='Score: 0'; drawT();
+});
+document.addEventListener('keydown', (e)=>{
+  if(!tCurrent) return;
+  if(e.key === 'ArrowLeft'){ if(canMove(tCurrent.shape, tCurrent.x-1, tCurrent.y)) tCurrent.x--; }
+  if(e.key === 'ArrowRight'){ if(canMove(tCurrent.shape, tCurrent.x+1, tCurrent.y)) tCurrent.x++; }
+  if(e.key === 'ArrowDown'){ if(canMove(tCurrent.shape, tCurrent.x, tCurrent.y+1)) tCurrent.y++; }
+  if(e.key === 'ArrowUp'){ const rot = rotate(tCurrent.shape); if(canMove(rot, tCurrent.x, tCurrent.y)) tCurrent.shape = rot; }
+  drawT();
+});
+
+/* =============================
+   Tic-Tac-Toe with Minimax bot
+   ============================= */
+const tttBoardEl = document.getElementById('ttt-board');
+const tttInfo = document.getElementById('ttt-info');
+let tttBoard = Array(9).fill('');
+let tttTurn = 'X'; // user is X, bot is O
+
+function drawTic(){
+  tttBoardEl.innerHTML = '';
+  for(let i=0;i<9;i++){
+    const btn = document.createElement('button');
+    btn.style.width='80px'; btn.style.height='80px'; btn.style.fontSize='28px';
+    btn.textContent = tttBoard[i];
+    btn.disabled = tttBoard[i] !== '';
+    btn.addEventListener('click', ()=> {
+      if(tttBoard[i] === ''){
+        tttBoard[i] = 'X';
+        if(checkWin(tttBoard,'X')){ tttInfo.textContent = i18n[LANG].ttt_x_wins || 'X wins!'; setTimeout(()=>tttNew(),500); return; }
+        if(tttBoard.every(x=>x!=='') ){ tttInfo.textContent = i18n[LANG].ttt_draw || 'Draw!'; setTimeout(()=>tttNew(),500); return; }
+        // bot move
+        const move = bestMove(tttBoard);
+        if(move>=0) tttBoard[move] = 'O';
+        if(checkWin(tttBoard,'O')){ tttInfo.textContent = i18n[LANG].ttt_o_wins || 'O wins!'; setTimeout(()=>tttNew(),500); return; }
+        if(tttBoard.every(x=>x!=='')){ tttInfo.textContent = i18n[LANG].ttt_draw || 'Draw!'; setTimeout(()=>tttNew(),500); return; }
+        drawTic();
+      }
+    });
+    tttBoardEl.appendChild(btn);
+  }
+}
+
+function tttNew(){
+  tttBoard = Array(9).fill('');
+  tttInfo.textContent = '';
+  drawTic();
+}
+
+function checkWin(b, p){
+  const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  return lines.some(line => line.every(i => b[i] === p));
+}
+
+// Minimax (perfect bot)
+function bestMove(board){
+  const avail = board.map((v,i)=>v===''?i:-1).filter(i=>i>=0);
+  if(avail.length===9) return [0,2,4,6,8][Math.floor(Math.random()*5)]; // prefer center/corners
+  let bestScore = -Infinity, move = -1;
+  for(const i of avail){
+    board[i] = 'O';
+    const score = minimax(board, 0, false);
+    board[i] = '';
+    if(score > bestScore){ bestScore = score; move = i; }
+  }
+  return move;
+}
+function minimax(board, depth, isMax){
+  if(checkWin(board,'O')) return 10 - depth;
+  if(checkWin(board,'X')) return depth - 10;
+  if(board.every(x=>x!=='')) return 0;
+  if(isMax){
+    let best = -Infinity;
+    for(let i=0;i<9;i++) if(board[i]===''){
+      board[i] = 'O';
+      best = Math.max(best, minimax(board, depth+1, false));
+      board[i] = '';
+    }
+    return best;
+  } else {
+    let best = Infinity;
+    for(let i=0;i<9;i++) if(board[i]===''){
+      board[i] = 'X';
+      best = Math.min(best, minimax(board, depth+1, true));
+      board[i] = '';
+    }
+    return best;
+  }
+}
+document.getElementById('ttt-new').addEventListener('click', tttNew);
+
+/* =============================
+   Calculator
+   ============================= */
+const calcDisplay = document.getElementById('calc-display');
+let calcVal = '';
+document.querySelectorAll('#win-calc .small[data-c]').forEach(b=>{
+  b.addEventListener('click', ()=>{ calcVal += b.getAttribute('data-c'); calcDisplay.value = calcVal; });
+});
+document.getElementById('calc-eq').addEventListener('click', ()=> {
+  try { calcVal = String(eval(calcVal)); calcDisplay.value = calcVal; } catch(e){ calcDisplay.value = i18n[LANG].calc_error || 'Error'; calcVal=''; }
+});
+document.getElementById('calc-clear').addEventListener('click', ()=> { calcVal=''; calcDisplay.value=''; });
+
+/* =============================
+   About window
+   ============================= */
+const aboutWin = document.createElement('div');
+aboutWin.className = 'win'; aboutWin.id = 'win-about'; aboutWin.style.left='120px'; aboutWin.style.top='120px'; aboutWin.style.display='none';
+aboutWin.innerHTML = `<div class="titlebar" data-win="about"><div class="title">About</div><div class="controls"><div class="btn btn-min" data-action="min">—</div><div class="btn btn-close" data-action="close">✕</div></div></div>
+<div class="content"><p>Retro Windows95-style demo.<br>Games: Minesweeper, Snake, Arkanoid, Tetris, Tic-Tac-Toe. Apps: Calculator, Notepad.</p><p>Developer link opens switchsandwich.github.io</p></div>`;
+document.body.appendChild(aboutWin); makeDraggable(aboutWin); createTaskButton(aboutWin);
+
+/* =============================
+   On-load: position windows and translate text
+   ============================= */
+window.addEventListener('load', ()=>{
+  document.querySelectorAll('.win').forEach((w,i)=>{
+    if(!w.style.left) w.style.left = (40 + i*20) + 'px';
+    if(!w.style.top) w.style.top = (40 + i*20) + 'px';
+  });
+  // translate UI
+  LANG = localStorage.getItem(STORAGE.LANG) || LANG || 'ru';
+  applyLang(LANG);
+});
+
+/* =============================
+   Prevent default contextmenu on mines board
+   ============================= */
 document.addEventListener('contextmenu', function(e){
   if(e.target && e.target.closest && e.target.closest('.mines-board')) e.preventDefault();
 }, false);
 
-/* About window creation (kept simple) */
-const aboutWin = document.createElement('div');
-aboutWin.className = 'win'; aboutWin.id = 'win-about';
-aboutWin.style.left = '120px'; aboutWin.style.top = '120px'; aboutWin.style.display = 'none';
-aboutWin.innerHTML = `<div class="titlebar" data-win="about"><div class="title">About</div><div class="controls"><div class="btn btn-min" data-action="min">—</div><div class="btn btn-close" data-action="close">✕</div></div></div><div class="content"><p>Retro Windows95-style demo.<br>Minesweeper & Snake built-in.</p><p>Developer link opens switchsandwich.github.io</p></div>`;
-document.body.appendChild(aboutWin);
-makeDraggable(aboutWin);
-createTaskButton(aboutWin);
-
-/* ensure windows positioned correctly on load */
-window.addEventListener('load', ()=> {
-  document.querySelectorAll('.win').forEach((w, i)=> {
-    if(!w.style.left) w.style.left = (40 + i*20) + 'px';
-    if(!w.style.top) w.style.top = (40 + i*20) + 'px';
-  });
-});
+/* =============================
+   End of file
+   ============================= */
 </script>
 
 </body>
