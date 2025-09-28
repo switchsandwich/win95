@@ -85,7 +85,7 @@ textarea{width:100%;height:120px;box-sizing:border-box;font-family:inherit;font-
 
 <div class="desktop" id="desktop" role="application">
   <div class="icons-area" id="iconsArea" aria-label="Desktop icons">
-    <!-- Icons -->
+    <!-- Icons (positions saved in localStorage) -->
     <div class="icon" id="icon-notepad" data-file="notepad" tabindex="0" style="left:0;top:0;">
       <img alt="Notepad" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='64' height='64' fill='%23f3f3f3' stroke='%23000000' stroke-width='2'/><rect x='8' y='10' width='48' height='44' fill='%23ffffff' stroke='%23000000' stroke-width='2'/><rect x='12' y='14' width='40' height='6' fill='%23000000'/></svg>">
       <div class="label" data-i18n="notepad">Notepad</div>
@@ -138,7 +138,6 @@ textarea{width:100%;height:120px;box-sizing:border-box;font-family:inherit;font-
 
   </div>
 
-  <!-- many windows (notepad, games...) -->
   <!-- Notepad -->
   <div class="win" id="win-notepad" style="left:40px;top:40px;display:none;">
     <div class="titlebar" data-win="notepad">
@@ -178,9 +177,6 @@ textarea{width:100%;height:120px;box-sizing:border-box;font-family:inherit;font-
       <div style="margin-top:8px;"><button id="g-new" class="small" data-i18n="new_game">Новая игра</button></div>
     </div>
   </div>
-
-  <!-- Mines, Snake, Arkanoid, Tetris, TTT, Calc windows are present (omitted here for brevity in comment) -->
-  <!-- ... (they are exactly as in the previous working full file) -->
 
   <!-- Minesweeper -->
   <div class="win" id="win-mines" style="left:200px;top:140px;display:none;width:640px;">
@@ -354,7 +350,7 @@ textarea{width:100%;height:120px;box-sizing:border-box;font-family:inherit;font-
 
 <script>
 /* =============================
-   Storage keys and i18n
+   Storage keys & i18n
    ============================= */
 const STORAGE = {
   ICONS: 'win95_icons_v3',
@@ -365,20 +361,43 @@ const STORAGE = {
 };
 
 const i18n = {
-  en: { notepad:'Notepad', notepad_title:'Notepad - notes.txt', notes_placeholder:'Write something...', save:'Save', clear:'Clear', saved_local:'Saved to localStorage', guess:'Guess', guess_title:'Game - Guess the number', guess_instr:'I picked a number between 1 and 100. Try to guess!', new_game:'New game', mines:'Minesweeper', difficulty:'Difficulty', new:'New', reset:'Reset', flag_mode:'Flag Mode: Off', mines_help:'Left click to reveal, right click to flag. On touch use Flag Mode.', snake:'Snake', start:'Start', pause:'Pause', restart:'Restart', snake_help:'Arrows / WASD control. Swipe on mobile.', arkanoid:'Arkanoid', tetris:'Tetris', ttt:'Tic-Tac-Toe', calc:'Calculator', settings:'Settings', start_label:'Start', open_notepad:'Open Notepad', play_guess:'Play Guess Number', about:'About', hint:'Double-click icon — open', developer:'Developer', mines_status0:'Mines: ', mines_status1:' Flags left: ', ttt_x_wins:'X wins!', ttt_o_wins:'O wins!', ttt_draw:'Draw!', calc_error:'Error' },
-  ru: { notepad:'Блокнот', notepad_title:'Блокнот - notes.txt', notes_placeholder:'Напиши что-нибудь...', save:'Save', clear:'Clear', saved_local:'Сохранено локально', guess:'Угадать', guess_title:'Игра - Угадай число', guess_instr:'Я загадал число от 1 до 100. Попробуй угадать!', new_game:'Новая игра', mines:'Сапёр', difficulty:'Сложность', new:'Новая', reset:'Сброс', flag_mode:'Режим флагов: Выкл', mines_help:'Левый клик — открыть, правый — флаг. На тачах используйте Flag Mode.', snake:'Змейка', start:'Старт', pause:'Пауза', restart:'Рестарт', snake_help:'Стрелки / WASD. Свайп на мобильных.', arkanoid:'Арканоид', tetris:'Тетрис', ttt:'Крестики-нолики', calc:'Калькулятор', settings:'Настройки', start_label:'Пуск', open_notepad:'Открыть блокнот', play_guess:'Угнать число', about:'О сайте', hint:'Двойной клик по иконке — открыть', developer:'Developer', mines_status0:'Mines: ', mines_status1:' Флагов осталось: ', ttt_x_wins:'X победил!', ttt_o_wins:'O победил!', ttt_draw:'Ничья!', calc_error:'Ошибка' }
+  en: {
+    notepad: 'Notepad', notepad_title: 'Notepad - notes.txt', notes_placeholder: 'Write something...',
+    save: 'Save', clear: 'Clear', saved_local: 'Saved to localStorage',
+    guess: 'Guess', guess_title: 'Game - Guess the number', guess_instr: 'I picked a number between 1 and 100. Try to guess!',
+    new_game: 'New game',
+    mines: 'Minesweeper', difficulty: 'Difficulty', new: 'New', reset: 'Reset', flag_mode: 'Flag Mode: Off', mines_help: 'Left click to reveal, right click to flag. On touch use Flag Mode.',
+    snake: 'Snake', start: 'Start', pause: 'Pause', restart: 'Restart', snake_help: 'Arrows / WASD control. Swipe on mobile.',
+    arkanoid: 'Arkanoid', tetris: 'Tetris', ttt: 'Tic-Tac-Toe', calc: 'Calculator', settings: 'Settings',
+    start: 'Start', open_notepad: 'Open Notepad', play_guess: 'Play Guess Number', about: 'About',
+    hint: 'Double-click icon — open', developer: 'Developer',
+    mines_status0: 'Mines: ', mines_status1: ' Flags left: ',
+    reset_all: 'Reset all data', change_lang: 'Change language', change_theme: 'Theme', bg_color: 'Wallpaper color',
+    ttt_new: 'New', ttt_x_wins: 'X wins!', ttt_o_wins: 'O wins!', ttt_draw: "Draw!",
+    calc_error: 'Error'
+  },
+  ru: {
+    notepad: 'Блокнот', notepad_title: 'Блокнот - notes.txt', notes_placeholder: 'Напиши что-нибудь...',
+    save: 'Save', clear: 'Clear', saved_local: 'Сохранено локально',
+    guess: 'Угадать', guess_title: 'Игра - Угадай число', guess_instr: 'Я загадал число от 1 до 100. Попробуй угадать!',
+    new_game: 'Новая игра',
+    mines: 'Сапёр', difficulty: 'Сложность', new: 'Новая', reset: 'Сброс', flag_mode: 'Режим флагов: Выкл', mines_help: 'Левый клик — открыть, правый — флаг. На тачах используйте Flag Mode.',
+    snake: 'Змейка', start: 'Старт', pause: 'Пауза', restart: 'Рестарт', snake_help: 'Стрелки / WASD. Свайп на мобильных.',
+    arkanoid: 'Арканоид', tetris: 'Тетрис', ttt: 'Крестики-нолики', calc: 'Калькулятор', settings: 'Настройки',
+    start: 'Пуск', open_notepad: 'Открыть блокнот', play_guess: 'Угадать число', about: 'О сайте',
+    hint: 'Двойной клик по иконке — открыть', developer: 'Developer',
+    mines_status0: 'Mines: ', mines_status1: ' Флагов осталось: ',
+    reset_all: 'Сбросить все данные', change_lang: 'Сменить язык', change_theme: 'Тема', bg_color: 'Цвет обоев',
+    ttt_new: 'Новая', ttt_x_wins: 'X победил!', ttt_o_wins: 'O победил!', ttt_draw: "Ничья!",
+    calc_error: 'Ошибка'
+  }
 };
 
 let LANG = localStorage.getItem(STORAGE.LANG) || null;
-if(!LANG){ document.getElementById('lang-modal').style.display = 'flex'; }
-else applyLang(LANG);
 
-document.getElementById('lang-ru').addEventListener('click', ()=> chooseLang('ru'));
-document.getElementById('lang-en').addEventListener('click', ()=> chooseLang('en'));
-
-function chooseLang(l){ LANG = l; localStorage.setItem(STORAGE.LANG, l); applyLang(l); document.getElementById('lang-modal').style.display='none'; }
-
+/* Helper: translate UI when called */
 function applyLang(l){
+  if(!l) return;
   document.documentElement.lang = l === 'ru' ? 'ru' : 'en';
   document.querySelectorAll('[data-i18n]').forEach(el=>{
     const key = el.getAttribute('data-i18n');
@@ -388,8 +407,6 @@ function applyLang(l){
     const key = el.getAttribute('data-i18n-placeholder');
     if(i18n[l] && i18n[l][key]) el.placeholder = i18n[l][key];
   });
-  // Safe: defer calls that may reference variables declared later
-  setTimeout(()=>{ if(typeof updateMinesStatus === 'function'){ try{ updateMinesStatus(); }catch(e){} } },0);
 }
 
 /* =============================
@@ -401,30 +418,8 @@ const savedBg = localStorage.getItem(STORAGE.BG);
 if(savedBg) document.body.style.background = savedBg;
 
 /* =============================
-   Small settings window
+   Utility: bring window front, draggable, task buttons
    ============================= */
-const settingsWinHTML = `
-  <div class="titlebar" data-win="settings"><div class="title">Settings</div><div class="controls"><div class="btn btn-min" data-action="min">—</div><div class="btn btn-close" data-action="close">✕</div></div></div>
-  <div class="content">
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <label>Language: <select id="settings-lang"><option value="ru">Русский</option><option value="en">English</option></select></label>
-      <label>Theme: <select id="settings-theme"><option value="light">Light</option><option value="dark">Dark</option></select></label>
-      <label>Wallpaper color: <input type="color" id="settings-bg"></label>
-      <button id="settings-reset" class="small">Reset all data</button>
-      <div style="font-size:11px;color:#333">Changes saved to localStorage</div>
-    </div>
-  </div>
-`;
-const settingsWin = document.createElement('div');
-settingsWin.className='win'; settingsWin.id='win-settings'; settingsWin.style.left='360px'; settingsWin.style.top='320px'; settingsWin.style.display='none';
-settingsWin.innerHTML = settingsWinHTML;
-document.body.appendChild(settingsWin);
-
-/* =============================
-   Taskbar helpers - ensure taskButtons exists before functions use it
-   ============================= */
-const taskButtons = document.getElementById('task-buttons');
-
 let z = 100;
 function bringToFront(el){
   z += 1;
@@ -433,10 +428,14 @@ function bringToFront(el){
   el.classList.add('focus');
 }
 
+/* taskButtons element exists in DOM; we'll use it in window.load initialization */
+const taskButtons = document.getElementById('task-buttons');
+
 function createTaskButton(winEl){
   const id = winEl.id;
   const nameEl = winEl.querySelector('.title');
   const name = nameEl ? nameEl.innerText : id;
+  if(!taskButtons) return;
   if(taskButtons.querySelector(`[data-for="${id}"]`)) return;
   const btn = document.createElement('button');
   btn.className='task-btn';
@@ -489,51 +488,8 @@ function makeDraggable(winEl){
   winEl.addEventListener('mousedown', ()=> bringToFront(winEl));
 }
 
-/* Initialize draggables + task buttons AFTER taskButtons and functions exist */
-document.querySelectorAll('.win').forEach(w => { makeDraggable(w); createTaskButton(w); });
-
-/* Window control buttons */
-document.querySelectorAll('.win .btn').forEach(b=>{
-  b.addEventListener('click', (e)=>{
-    const act = b.dataset.action; const win = b.closest('.win');
-    if(act==='close'){ win.style.display = 'none'; }
-    else if(act==='min'){ win.style.display = 'none'; }
-    e.stopPropagation();
-  });
-});
-
-/* Start menu handling */
-const startButton = document.getElementById('start-button');
-const startMenu = document.getElementById('start-menu');
-startButton.addEventListener('click', (e)=>{
-  const vis = startMenu.style.display === 'block';
-  startMenu.style.display = vis ? 'none' : 'block';
-  startButton.setAttribute('aria-expanded', String(!vis));
-});
-document.addEventListener('click', (e)=>{
-  if(!startMenu.contains(e.target) && !startButton.contains(e.target)) startMenu.style.display = 'none';
-});
-startMenu.querySelectorAll('button[data-open]').forEach(b => {
-  b.addEventListener('click', ()=> { openWindow(b.dataset.open); startMenu.style.display='none'; });
-});
-
-/* openWindow helper */
-function openWindow(name){
-  if(name === 'developer'){ window.open('https://switchsandwich.github.io', '_blank', 'noopener'); return; }
-  const map = {
-    notepad:'win-notepad', game:'win-game', mines:'win-mines', snake:'win-snake',
-    arkanoid:'win-ark', tetris:'win-tetris', ttt:'win-ttt', calc:'win-calc',
-    settings:'win-settings', about:'win-about'
-  };
-  const id = map[name];
-  if(!id) return;
-  const w = document.getElementById(id);
-  if(!w) return;
-  w.style.display = 'flex'; bringToFront(w);
-}
-
 /* =============================
-   Desktop icons: drag & save positions
+   Desktop icons drag + save
    ============================= */
 const icons = Array.from(document.querySelectorAll('.icon'));
 function loadIconPositions(){
@@ -552,7 +508,6 @@ function saveIconPositions(){
   icons.forEach(ic => { obj[ic.id] = { x: parseInt(ic.style.left || 0,10), y: parseInt(ic.style.top || 0,10) }; });
   localStorage.setItem(STORAGE.ICONS, JSON.stringify(obj));
 }
-loadIconPositions();
 
 icons.forEach(ic => {
   ic.addEventListener('keydown', (e)=>{
@@ -619,36 +574,37 @@ const hint = document.getElementById('hint');
 let hintTimer = setTimeout(()=>{ hint.style.display = 'block'; }, 1200);
 document.getElementById('desktop').addEventListener('mousemove', ()=>{ hint.style.display='none'; if(hintTimer){ clearTimeout(hintTimer); hintTimer=null; } });
 
-/* ===== Notepad save/load ===== */
+/* =============================
+   Notepad save/load
+   ============================= */
 const notesEl = document.getElementById('notes');
 const saveBtn = document.getElementById('save-notes');
 const clearBtn = document.getElementById('clear-notes');
-window.addEventListener('load', ()=> {
-  const saved = localStorage.getItem(STORAGE.NOTES); if(saved) notesEl.value = saved;
-});
-saveBtn.addEventListener('click', ()=> {
+saveBtn && saveBtn.addEventListener('click', ()=> {
   const v = notesEl.value; localStorage.setItem(STORAGE.NOTES, v);
   saveBtn.textContent = (i18n[LANG] && i18n[LANG].save) ? i18n[LANG].save + ' ✓' : 'Saved ✓';
   setTimeout(()=> saveBtn.textContent = (i18n[LANG] && i18n[LANG].save) ? i18n[LANG].save : 'Save', 900);
 });
-clearBtn.addEventListener('click', ()=> { notesEl.value=''; localStorage.removeItem(STORAGE.NOTES); });
+clearBtn && clearBtn.addEventListener('click', ()=> { notesEl.value=''; localStorage.removeItem(STORAGE.NOTES); });
 
-/* ===== Guess number ===== */
+/* Guess number */
 let secret = Math.floor(Math.random()*100)+1;
 const inEl = document.getElementById('g-input');
 const btnGuess = document.getElementById('g-btn');
 const outEl = document.getElementById('g-res');
 const newBtn = document.getElementById('g-new');
-btnGuess.addEventListener('click', ()=>{
+btnGuess && btnGuess.addEventListener('click', ()=>{
   const v = Number(inEl.value);
   if(!v || v<1 || v>100){ outEl.textContent = (i18n[LANG] && i18n[LANG].guess) ? i18n[LANG].guess + ': 1–100' : 'Введите число 1–100'; return; }
-  if(v===secret){ outEl.textContent = 'Correct! 🎉'; }
-  else if(v < secret) outEl.textContent = 'Higher →';
-  else outEl.textContent = 'Lower ←';
+  if(v===secret){ outEl.textContent = (LANG==='ru') ? 'Правильно! 🎉' : 'Correct! 🎉'; }
+  else if(v < secret) outEl.textContent = (LANG==='ru') ? 'Больше →' : 'Higher →';
+  else outEl.textContent = (LANG==='ru') ? 'Меньше ←' : 'Lower ←';
 });
-newBtn.addEventListener('click', ()=>{ secret = Math.floor(Math.random()*100)+1; outEl.textContent = (i18n[LANG] && i18n[LANG].new_game) ? i18n[LANG].new_game : 'New game!'; inEl.value=''; });
+newBtn && newBtn.addEventListener('click', ()=>{ secret = Math.floor(Math.random()*100)+1; outEl.textContent = (i18n[LANG] && i18n[LANG].new_game) ? i18n[LANG].new_game : 'New game!'; inEl.value=''; });
 
-/* ===== MINESWEEPER ===== */
+/* =============================
+   MINESWEEPER
+   ============================= */
 const minesWrap = document.getElementById('mines-board-wrap');
 const minesStatus = document.getElementById('mines-status');
 const minesNew = document.getElementById('mines-new');
@@ -761,7 +717,7 @@ function floodRevealFixed(r,c){
 
 function revealCell(r,c){
   const st = minesState;
-  if(st.gameOver) return;
+  if(!st || st.gameOver) return;
   const cell = st.cells[r][c];
   const el = document.querySelector(`[data-r='${r}'][data-c='${c}']`);
   if(!el) return;
@@ -788,7 +744,7 @@ function revealCell(r,c){
 
 function toggleFlag(r,c){
   const st = minesState;
-  if(st.gameOver || st.cells[r][c].revealed) return;
+  if(!st || st.gameOver || st.cells[r][c].revealed) return;
   const cell = st.cells[r][c];
   const el = document.querySelector(`[data-r='${r}'][data-c='${c}']`);
   if(!el) return;
@@ -800,10 +756,11 @@ function toggleFlag(r,c){
 
 function checkMinesWin(){
   const st = minesState;
+  if(!st) return;
   const total = st.rows*st.cols;
   if(st.revealedCount === total - st.mines && !st.gameOver){
     st.gameOver = true;
-    minesStatus.textContent = 'You win! 🎉';
+    minesStatus.textContent = (LANG==='ru') ? 'Победа! 🎉' : 'You win! 🎉';
     for(let r=0;r<st.rows;r++) for(let c=0;c<st.cols;c++){
       const cell = st.cells[r][c]; const el = document.querySelector(`[data-r='${r}'][data-c='${c}']`);
       if(!el) continue;
@@ -821,6 +778,7 @@ function updateMinesStatus(){
 
 function renderMines(){
   const st = minesState;
+  if(!st) return;
   minesWrap.innerHTML = '';
   const board = document.createElement('div');
   board.className = 'mines-board';
@@ -845,28 +803,28 @@ function renderMines(){
   updateMinesStatus();
 }
 
-minesNew.addEventListener('click', ()=> { newMines(minesDiff.value); });
-minesReset.addEventListener('click', ()=> {
+(minesNew && minesNew.addEventListener('click', ()=> { newMines(minesDiff.value); }));
+(minesReset && minesReset.addEventListener('click', ()=> {
   if(!minesState) return;
   const diff = minesDiff.value;
   newMines(diff);
-});
-minesDiff.addEventListener('change', ()=> { newMines(minesDiff.value); });
-minesFlagModeBtn.addEventListener('click', ()=>{
+}));
+(minesDiff && minesDiff.addEventListener('change', ()=> { newMines(minesDiff.value); }));
+(minesFlagModeBtn && minesFlagModeBtn.addEventListener('click', ()=>{
   minesFlagMode = !minesFlagMode;
   const txt = (i18n[LANG] && i18n[LANG].flag_mode) ? i18n[LANG].flag_mode : 'Flag Mode: ';
   minesFlagModeBtn.textContent = txt + (minesFlagMode ? 'On' : 'Off');
-});
+}));
 
-newMines('beginner');
-
-/* ===== SNAKE ===== */
+/* =============================
+   SNAKE (fixed restart bug)
+   ============================= */
 const snakeCanvas = document.getElementById('snake-canvas');
 const snakeCtx = snakeCanvas.getContext('2d');
-const scoreEl = document.getElementById('snake-score');
-const btnStart = document.getElementById('snake-start');
-const btnPause = document.getElementById('snake-pause');
-const btnRestart = document.getElementById('snake-restart');
+const snakeScoreEl = document.getElementById('snake-score');
+const snakeStartBtn = document.getElementById('snake-start');
+const snakePauseBtn = document.getElementById('snake-pause');
+const snakeRestartBtn = document.getElementById('snake-restart');
 
 let gridCount = 20;
 let sCellSize = Math.floor(snakeCanvas.width / gridCount);
@@ -914,7 +872,7 @@ function stepSnake(){
   if(head.y >= gridCount) head.y = 0;
   if(snakeBody.some(s=>s.x===head.x && s.y===head.y)){
     sRunning = false; if(sInterval){ clearInterval(sInterval); sInterval=null; }
-    alert('Game over! Score: ' + sScore);
+    alert((LANG==='ru') ? ('Игра окончена! Счёт: ' + sScore) : ('Game over! Score: ' + sScore));
     return;
   }
   snakeBody.unshift(head);
@@ -924,7 +882,7 @@ function stepSnake(){
 function startSnake(){ if(sRunning) return; sRunning=true; if(sInterval) clearInterval(sInterval); sInterval = setInterval(stepSnake, sSpeed); }
 function pauseSnake(){ if(sInterval){ clearInterval(sInterval); sInterval = null; sRunning=false; } }
 function restartSnake(){ pauseSnake(); resetSnake(); startSnake(); }
-function updateScore(){ scoreEl.textContent = 'Score: ' + sScore; }
+function updateScore(){ snakeScoreEl.textContent = (LANG==='ru' ? 'Счёт: ' : 'Score: ') + sScore; }
 
 document.addEventListener('keydown', (e)=>{
   const k = e.key.toLowerCase();
@@ -934,9 +892,9 @@ document.addEventListener('keydown', (e)=>{
   if(k === 'arrowright' || k === 'd'){ if(sDir.x!==-1) sDir = {x:1,y:0}; }
 });
 
-btnStart.addEventListener('click', ()=> startSnake());
-btnPause.addEventListener('click', ()=> pauseSnake());
-btnRestart.addEventListener('click', ()=> { restartSnake(); });
+snakeStartBtn && snakeStartBtn.addEventListener('click', ()=> startSnake());
+snakePauseBtn && snakePauseBtn.addEventListener('click', ()=> pauseSnake());
+snakeRestartBtn && snakeRestartBtn.addEventListener('click', ()=> { restartSnake(); });
 
 let sTouchStartX=0, sTouchStartY=0;
 snakeCanvas.addEventListener('touchstart', (e)=>{ const t = e.touches[0]; sTouchStartX = t.clientX; sTouchStartY = t.clientY; });
@@ -951,35 +909,428 @@ snakeCanvas.addEventListener('touchend', (e)=> {
   }
 });
 
-resetSnake();
-drawSnake();
+/* =============================
+   Arkanoid
+   ============================= */
+const arkCanvas = document.getElementById('arkanoid-canvas');
+const arkCtx = arkCanvas.getContext('2d');
+const arkStartBtn = document.getElementById('ark-start');
+const arkResetBtn = document.getElementById('ark-reset');
+const arkLivesEl = document.getElementById('ark-lives');
 
-/* ===== Arkanoid, Tetris, TTT, Calc implementations omitted here for brevity; they are identical
-   to working versions in previous file and were kept in the actual file you paste.
-   (If you need the full repeated blocks here, they are in the earlier message.) ===== */
+let arkInterval = null;
+let arkPaddle = { x: arkCanvas.width/2 - 40, y: arkCanvas.height - 20, w: 80, h: 10 };
+let arkBall = { x: arkCanvas.width/2, y: arkCanvas.height - 30, vx: 3, vy: -3, r: 6 };
+let arkBricks = [];
+let arkRows = 5, arkCols = 8;
+let arkBrickW = Math.floor((arkCanvas.width - 40)/arkCols);
+let arkLives = 3;
+function initArk(){
+  arkBricks = [];
+  for(let r=0;r<arkRows;r++){
+    for(let c=0;c<arkCols;c++){
+      arkBricks.push({x:20 + c*arkBrickW, y:20 + r*20, w: arkBrickW-6, h:16, alive:true});
+    }
+  }
+  arkPaddle.x = arkCanvas.width/2 - arkPaddle.w/2;
+  arkBall.x = arkCanvas.width/2; arkBall.y = arkCanvas.height - 30; arkBall.vx = 3; arkBall.vy = -3;
+  arkLives = 3; if(arkLivesEl) arkLivesEl.textContent = 'Lives: ' + arkLives;
+  drawArk();
+}
+function drawArk(){
+  arkCtx.fillStyle = '#111'; arkCtx.fillRect(0,0,arkCanvas.width, arkCanvas.height);
+  arkBricks.forEach(b => { if(b.alive){ arkCtx.fillStyle = '#ffcc00'; arkCtx.fillRect(b.x,b.y,b.w,b.h); arkCtx.strokeStyle='#000'; arkCtx.strokeRect(b.x,b.y,b.w,b.h); }});
+  arkCtx.fillStyle = '#00aaff'; arkCtx.fillRect(arkPaddle.x, arkPaddle.y, arkPaddle.w, arkPaddle.h);
+  arkCtx.beginPath(); arkCtx.fillStyle = '#fff'; arkCtx.arc(arkBall.x, arkBall.y, arkBall.r, 0, Math.PI*2); arkCtx.fill();
+}
+function stepArk(){
+  arkBall.x += arkBall.vx; arkBall.y += arkBall.vy;
+  if(arkBall.x - arkBall.r < 0 || arkBall.x + arkBall.r > arkCanvas.width) arkBall.vx *= -1;
+  if(arkBall.y - arkBall.r < 0) arkBall.vy *= -1;
+  if(arkBall.y + arkBall.r > arkCanvas.height){
+    arkLives--; if(arkLivesEl) arkLivesEl.textContent = 'Lives: ' + arkLives;
+    if(arkLives <= 0){ clearInterval(arkInterval); arkInterval = null; alert((LANG==='ru') ? 'Игра окончена' : 'Game over'); return; }
+    arkBall.x = arkCanvas.width/2; arkBall.y = arkCanvas.height - 30; arkBall.vy = -3;
+  }
+  if(arkBall.y + arkBall.r >= arkPaddle.y && arkBall.x >= arkPaddle.x && arkBall.x <= arkPaddle.x + arkPaddle.w){
+    arkBall.vy *= -1;
+    const hit = (arkBall.x - (arkPaddle.x + arkPaddle.w/2)) / (arkPaddle.w/2);
+    arkBall.vx = hit * 4;
+  }
+  arkBricks.forEach(b => {
+    if(b.alive && arkBall.x > b.x && arkBall.x < b.x + b.w && arkBall.y - arkBall.r < b.y + b.h && arkBall.y + arkBall.r > b.y){
+      b.alive = false; arkBall.vy *= -1;
+    }
+  });
+  drawArk();
+}
+arkCanvas.addEventListener('mousemove', (e)=> {
+  const rect = arkCanvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  arkPaddle.x = Math.max(0, Math.min(arkCanvas.width - arkPaddle.w, mx - arkPaddle.w/2));
+});
+arkCanvas.addEventListener('touchmove', (e)=> {
+  const t = e.touches[0]; const rect = arkCanvas.getBoundingClientRect(); const mx = t.clientX - rect.left;
+  arkPaddle.x = Math.max(0, Math.min(arkCanvas.width - arkPaddle.w, mx - arkPaddle.w/2));
+  e.preventDefault();
+}, {passive:false});
+arkStartBtn && arkStartBtn.addEventListener('click', ()=> {
+  if(arkInterval) return;
+  arkInterval = setInterval(stepArk, 20);
+});
+arkResetBtn && arkResetBtn.addEventListener('click', ()=> {
+  if(arkInterval){ clearInterval(arkInterval); arkInterval=null; }
+  initArk();
+});
+initArk();
 
-/* About window */
+/* =============================
+   TETRIS (simplified)
+   ============================= */
+const tCanvas = document.getElementById('tetris-canvas');
+const tCtx = tCanvas.getContext('2d');
+const tRows = 20, tCols = 10;
+const tCell = 24;
+let tGrid = [];
+let tInterval = null;
+let tSpeed = 500;
+let tCurrent = null;
+let tScore = 0;
+
+const TETRIMINOS = {
+  I: { cells: [[1,1,1,1]], color:'#00f0f0' },
+  O: { cells: [[1,1],[1,1]], color:'#f0f000' },
+  T: { cells: [[0,1,0],[1,1,1]], color:'#a000f0' },
+  S: { cells: [[0,1,1],[1,1,0]], color:'#00f000' },
+  Z: { cells: [[1,1,0],[0,1,1]], color:'#f00000' },
+  J: { cells: [[1,0,0],[1,1,1]], color:'#0000f0' },
+  L: { cells: [[0,0,1],[1,1,1]], color:'#f08000' }
+};
+function newTGrid(){ tGrid = Array.from({length:tRows},()=>Array(tCols).fill(0)); }
+function drawT(){
+  tCtx.fillStyle='#111'; tCtx.fillRect(0,0,tCanvas.width,tCanvas.height);
+  for(let r=0;r<tRows;r++) for(let c=0;c<tCols;c++){
+    if(tGrid[r][c]){ tCtx.fillStyle = tGrid[r][c]; tCtx.fillRect(c*tCell, r*tCell, tCell-1, tCell-1); }
+  }
+  if(tCurrent) drawPiece(tCurrent);
+}
+function drawPiece(p){
+  for(let r=0;r<p.shape.length;r++) for(let c=0;c<p.shape[r].length;c++){
+    if(p.shape[r][c]){
+      tCtx.fillStyle = p.color;
+      tCtx.fillRect((p.x+c)*tCell, (p.y+r)*tCell, tCell-1, tCell-1);
+    }
+  }
+}
+function spawnPiece(){
+  const keys = Object.keys(TETRIMINOS);
+  const k = keys[Math.floor(Math.random()*keys.length)];
+  const proto = TETRIMINOS[k];
+  const shape = proto.cells.map(row=>row.slice());
+  tCurrent = { shape, x: Math.floor((tCols-shape[0].length)/2), y:0, color: proto.color };
+}
+function rotate(shape){
+  const H = shape.length, W = shape[0].length;
+  const out = Array.from({length:W},()=>Array(H).fill(0));
+  for(let r=0;r<H;r++) for(let c=0;c<W;c++) out[c][H-1-r]=shape[r][c];
+  return out;
+}
+function canMove(shape,x,y){
+  for(let r=0;r<shape.length;r++) for(let c=0;c<shape[r].length;c++){
+    if(!shape[r][c]) continue;
+    const rr = y + r, cc = x + c;
+    if(rr<0 || cc<0 || cc>=tCols) return false;
+    if(rr>=tRows) return false;
+    if(tGrid[rr][cc]) return false;
+  }
+  return true;
+}
+function fixPiece(){
+  const p = tCurrent;
+  for(let r=0;r<p.shape.length;r++) for(let c=0;c<p.shape[r].length;c++){
+    if(p.shape[r][c]) tGrid[p.y+r][p.x+c] = p.color;
+  }
+  clearLines();
+  spawnPiece();
+  if(!canMove(tCurrent.shape,tCurrent.x,tCurrent.y)) {
+    clearInterval(tInterval); tInterval=null; alert((LANG==='ru') ? 'Игра окончена' : 'Game over'); 
+  }
+}
+function clearLines(){
+  for(let r=tRows-1;r>=0;r--){
+    if(tGrid[r].every(cell=>cell!==0)){
+      tGrid.splice(r,1); tGrid.unshift(Array(tCols).fill(0)); tScore += 100; document.getElementById('tetris-score').textContent = 'Score: '+tScore; r++;
+    }
+  }
+}
+function stepT(){
+  if(!tCurrent) return;
+  if(canMove(tCurrent.shape, tCurrent.x, tCurrent.y+1)) tCurrent.y++;
+  else fixPiece();
+  drawT();
+}
+document.getElementById('tetris-start') && document.getElementById('tetris-start').addEventListener('click', ()=> {
+  if(tInterval) return;
+  if(!tCurrent){ newTGrid(); spawnPiece(); }
+  tInterval = setInterval(stepT, tSpeed);
+});
+document.getElementById('tetris-reset') && document.getElementById('tetris-reset').addEventListener('click', ()=> {
+  if(tInterval){ clearInterval(tInterval); tInterval=null; }
+  newTGrid(); tCurrent=null; tScore=0; document.getElementById('tetris-score').textContent='Score: 0'; drawT();
+});
+document.addEventListener('keydown', (e)=>{
+  if(!tCurrent) return;
+  if(e.key === 'ArrowLeft'){ if(canMove(tCurrent.shape, tCurrent.x-1, tCurrent.y)) tCurrent.x--; }
+  if(e.key === 'ArrowRight'){ if(canMove(tCurrent.shape, tCurrent.x+1, tCurrent.y)) tCurrent.x++; }
+  if(e.key === 'ArrowDown'){ if(canMove(tCurrent.shape, tCurrent.x, tCurrent.y+1)) tCurrent.y++; }
+  if(e.key === 'ArrowUp'){ const rot = rotate(tCurrent.shape); if(canMove(rot, tCurrent.x, tCurrent.y)) tCurrent.shape = rot; }
+  drawT();
+});
+
+/* =============================
+   Tic-Tac-Toe (minimax bot)
+   ============================= */
+const tttBoardEl = document.getElementById('ttt-board');
+const tttInfo = document.getElementById('ttt-info');
+let tttBoard = Array(9).fill('');
+function drawTic(){
+  tttBoardEl.innerHTML = '';
+  for(let i=0;i<9;i++){
+    const btn = document.createElement('button');
+    btn.style.width='80px'; btn.style.height='80px'; btn.style.fontSize='28px';
+    btn.textContent = tttBoard[i];
+    btn.disabled = tttBoard[i] !== '';
+    btn.addEventListener('click', ()=> {
+      if(tttBoard[i] === ''){
+        tttBoard[i] = 'X';
+        if(checkWin(tttBoard,'X')){ tttInfo.textContent = (i18n[LANG] && i18n[LANG].ttt_x_wins) ? i18n[LANG].ttt_x_wins : 'X wins!'; setTimeout(()=>tttNew(),500); return; }
+        if(tttBoard.every(x=>x!=='') ){ tttInfo.textContent = (i18n[LANG] && i18n[LANG].ttt_draw) ? i18n[LANG].ttt_draw : 'Draw!'; setTimeout(()=>tttNew(),500); return; }
+        const move = bestMove(tttBoard);
+        if(move>=0) tttBoard[move] = 'O';
+        if(checkWin(tttBoard,'O')){ tttInfo.textContent = (i18n[LANG] && i18n[LANG].ttt_o_wins) ? i18n[LANG].ttt_o_wins : 'O wins!'; setTimeout(()=>tttNew(),500); return; }
+        if(tttBoard.every(x=>x!=='')){ tttInfo.textContent = (i18n[LANG] && i18n[LANG].ttt_draw) ? i18n[LANG].ttt_draw : 'Draw!'; setTimeout(()=>tttNew(),500); return; }
+        drawTic();
+      }
+    });
+    tttBoardEl.appendChild(btn);
+  }
+}
+function tttNew(){ tttBoard = Array(9).fill(''); tttInfo.textContent = ''; drawTic(); }
+function checkWin(b, p){
+  const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  return lines.some(line => line.every(i => b[i] === p));
+}
+function bestMove(board){
+  const avail = board.map((v,i)=>v===''?i:-1).filter(i=>i>=0);
+  if(avail.length===9) return [0,2,4,6,8][Math.floor(Math.random()*5)];
+  let bestScore = -Infinity, move = -1;
+  for(const i of avail){
+    board[i] = 'O';
+    const score = minimax(board, 0, false);
+    board[i] = '';
+    if(score > bestScore){ bestScore = score; move = i; }
+  }
+  return move;
+}
+function minimax(board, depth, isMax){
+  if(checkWin(board,'O')) return 10 - depth;
+  if(checkWin(board,'X')) return depth - 10;
+  if(board.every(x=>x!=='') ) return 0;
+  if(isMax){
+    let best = -Infinity;
+    for(let i=0;i<9;i++) if(board[i]===''){
+      board[i] = 'O';
+      best = Math.max(best, minimax(board, depth+1, false));
+      board[i] = '';
+    }
+    return best;
+  } else {
+    let best = Infinity;
+    for(let i=0;i<9;i++) if(board[i]===''){
+      board[i] = 'X';
+      best = Math.min(best, minimax(board, depth+1, true));
+      board[i] = '';
+    }
+    return best;
+  }
+}
+document.getElementById('ttt-new') && document.getElementById('ttt-new').addEventListener('click', tttNew);
+
+/* =============================
+   Calculator
+   ============================= */
+const calcDisplay = document.getElementById('calc-display');
+let calcVal = '';
+document.querySelectorAll('#win-calc .small[data-c]').forEach(b=>{
+  b.addEventListener('click', ()=>{ calcVal += b.getAttribute('data-c'); calcDisplay.value = calcVal; });
+});
+document.getElementById('calc-eq') && document.getElementById('calc-eq').addEventListener('click', ()=> {
+  try { calcVal = String(eval(calcVal)); calcDisplay.value = calcVal; } catch(e){ calcDisplay.value = (i18n[LANG] && i18n[LANG].calc_error) ? i18n[LANG].calc_error : 'Error'; calcVal=''; }
+});
+document.getElementById('calc-clear') && document.getElementById('calc-clear').addEventListener('click', ()=> { calcVal=''; calcDisplay.value=''; });
+
+/* =============================
+   About window (created dynamically)
+   ============================= */
 const aboutWin = document.createElement('div');
 aboutWin.className = 'win'; aboutWin.id = 'win-about'; aboutWin.style.left='120px'; aboutWin.style.top='120px'; aboutWin.style.display='none';
 aboutWin.innerHTML = `<div class="titlebar" data-win="about"><div class="title">About</div><div class="controls"><div class="btn btn-min" data-action="min">—</div><div class="btn btn-close" data-action="close">✕</div></div></div>
-<div class="content"><p>Retro Windows95-style demo.<br>Games & apps demo.</p><p>Developer link opens switchsandwich.github.io</p></div>`;
-document.body.appendChild(aboutWin); makeDraggable(aboutWin); createTaskButton(aboutWin);
+<div class="content"><p>Retro Windows95-style demo.<br>Games: Minesweeper, Snake, Arkanoid, Tetris, Tic-Tac-Toe. Apps: Calculator, Notepad.</p><p>Developer link opens switchsandwich.github.io</p></div>`;
+document.body.appendChild(aboutWin);
 
-/* On-load: position windows and apply language */
-window.addEventListener('load', ()=>{
-  document.querySelectorAll('.win').forEach((w,i)=>{
-    if(!w.style.left) w.style.left = (40 + i*20) + 'px';
-    if(!w.style.top) w.style.top = (40 + i*20) + 'px';
-  });
-  LANG = localStorage.getItem(STORAGE.LANG) || LANG || 'ru';
-  applyLang(LANG);
+/* =============================
+   Settings window (created dynamically)
+   ============================= */
+const settingsWinHTML = `
+  <div class="titlebar" data-win="settings"><div class="title">Settings</div><div class="controls"><div class="btn btn-min" data-action="min">—</div><div class="btn btn-close" data-action="close">✕</div></div></div>
+  <div class="content">
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <label>Language: <select id="settings-lang"><option value="ru">Русский</option><option value="en">English</option></select></label>
+      <label>Theme: <select id="settings-theme"><option value="light">Light</option><option value="dark">Dark</option></select></label>
+      <label>Wallpaper color: <input type="color" id="settings-bg"></label>
+      <button id="settings-reset" class="small">Reset all data</button>
+      <div style="font-size:11px;color:#333">Changes saved to localStorage</div>
+    </div>
+  </div>
+`;
+const settingsWin = document.createElement('div');
+settingsWin.className='win'; settingsWin.id='win-settings'; settingsWin.style.left='360px'; settingsWin.style.top='320px'; settingsWin.style.display='none';
+settingsWin.innerHTML = settingsWinHTML;
+document.body.appendChild(settingsWin);
+
+/* Start menu handling & openWindow helper */
+const startButton = document.getElementById('start-button');
+const startMenu = document.getElementById('start-menu');
+startButton && startButton.addEventListener('click', (e)=>{
+  const vis = startMenu.style.display === 'block';
+  startMenu.style.display = vis ? 'none' : 'block';
+  startButton.setAttribute('aria-expanded', String(!vis));
+});
+document.addEventListener('click', (e)=>{
+  if(startMenu && !startMenu.contains(e.target) && !startButton.contains(e.target)) startMenu.style.display = 'none';
+});
+startMenu.querySelectorAll('button[data-open]').forEach(b => {
+  b.addEventListener('click', ()=> { openWindow(b.dataset.open); startMenu.style.display='none'; });
 });
 
-/* Prevent default contextmenu on mines board */
+function openWindow(name){
+  if(name === 'developer'){ window.open('https://switchsandwich.github.io', '_blank', 'noopener'); return; }
+  const map = {
+    notepad:'win-notepad', game:'win-game', mines:'win-mines', snake:'win-snake',
+    arkanoid:'win-ark', tetris:'win-tetris', ttt:'win-ttt', calc:'win-calc',
+    settings:'win-settings', about:'win-about'
+  };
+  const id = map[name];
+  if(!id) return;
+  const w = document.getElementById(id);
+  if(!w) return;
+  w.style.display = 'flex'; bringToFront(w);
+}
+
+/* Window control buttons (close/minimize) */
+function wireWindowControls(){
+  document.querySelectorAll('.win .btn').forEach(b=>{
+    b.addEventListener('click', (e)=>{
+      const act = b.dataset.action; const win = b.closest('.win');
+      if(act==='close'){ win.style.display = 'none'; }
+      else if(act==='min'){ win.style.display = 'none'; }
+      e.stopPropagation();
+    });
+  });
+}
+
+/* Settings interactions */
+function wireSettings(){
+  document.body.addEventListener('click', (e)=> {
+    if(e.target && e.target.id === 'settings-reset'){
+      if(confirm('Reset all local data?')) {
+        localStorage.clear();
+        location.reload();
+      }
+    }
+  });
+  document.body.addEventListener('change', (e)=>{
+    if(e.target && e.target.id === 'settings-theme'){
+      const v = e.target.value;
+      localStorage.setItem(STORAGE.THEME, v);
+      document.documentElement.setAttribute('data-theme', v);
+    }
+    if(e.target && e.target.id === 'settings-lang'){
+      const v = e.target.value;
+      localStorage.setItem(STORAGE.LANG, v);
+      LANG = v; applyLang(v);
+    }
+    if(e.target && e.target.id === 'settings-bg'){
+      const v = e.target.value;
+      localStorage.setItem(STORAGE.BG, v);
+      document.body.style.background = v;
+    }
+  });
+}
+
+/* Prevent context menu on mines board */
 document.addEventListener('contextmenu', function(e){
   if(e.target && e.target.closest && e.target.closest('.mines-board')) e.preventDefault();
 }, false);
 
+/* =============================
+   Final initialization on load (safe order)
+   ============================= */
+window.addEventListener('load', ()=>{
+  // translate / language
+  LANG = localStorage.getItem(STORAGE.LANG) || LANG || null;
+  if(!LANG){
+    document.getElementById('lang-modal').style.display = 'flex';
+  } else {
+    applyLang(LANG);
+  }
+  document.getElementById('lang-ru').addEventListener('click', ()=>{ LANG='ru'; localStorage.setItem(STORAGE.LANG,'ru'); applyLang('ru'); document.getElementById('lang-modal').style.display='none'; });
+  document.getElementById('lang-en').addEventListener('click', ()=>{ LANG='en'; localStorage.setItem(STORAGE.LANG,'en'); applyLang('en'); document.getElementById('lang-modal').style.display='none'; });
+
+  // theme & bg defaults
+  const savedT = localStorage.getItem(STORAGE.THEME) || 'light';
+  document.documentElement.setAttribute('data-theme', savedT);
+  const bg = localStorage.getItem(STORAGE.BG);
+  if(bg) document.body.style.background = bg;
+
+  // load notepad contents
+  const savedNotes = localStorage.getItem(STORAGE.NOTES);
+  if(savedNotes) notesEl.value = savedNotes;
+
+  // load icon positions
+  loadIconPositions();
+
+  // wire window controls & settings
+  wireWindowControls();
+  wireSettings();
+
+  // make existing windows draggable and create task buttons
+  document.querySelectorAll('.win').forEach(w => { makeDraggable(w); createTaskButton(w); });
+
+  // also wire dynamic windows created earlier
+  makeDraggable(aboutWin); createTaskButton(aboutWin);
+  makeDraggable(settingsWin); createTaskButton(settingsWin);
+
+  // ensure initial windows positions
+  document.querySelectorAll('.win').forEach((w,i)=> {
+    if(!w.style.left) w.style.left = (40 + i*20) + 'px';
+    if(!w.style.top) w.style.top = (40 + i*20) + 'px';
+  });
+
+  // initialize games that need starting state
+  newMines('beginner');
+  resetSnake();
+  initArk();
+  newTGrid();
+  drawT();
+  tttNew();
+
+  // set translated UI after components exist
+  if(LANG) applyLang(LANG);
+
+  // save icon positions when leaving
+  window.addEventListener('beforeunload', saveIconPositions);
+});
 </script>
 
 </body>
