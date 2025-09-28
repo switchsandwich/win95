@@ -209,15 +209,35 @@ textarea{width:100%;height:120px;box-sizing:border-box;font-family:inherit;font-
 <div class="hint" id="hint" style="display:none">Double-click icon — открыть</div>
 
 <script>
-/* =========================
-   Utilities: z-index & focus
-   ========================= */
+/* ============ FIXED SCRIPT =============
+   Key change: declare taskButtons before we call createTaskButton()
+========================================*/
+
+/* utility: z-index & focus */
 let z = 100;
 function bringToFront(el){
   z += 1;
   el.style.zIndex = z;
   document.querySelectorAll('.win').forEach(w => w.classList.remove('focus'));
   el.classList.add('focus');
+}
+
+/* cache DOM references that are used by createTaskButton */
+const taskButtons = document.getElementById('task-buttons');
+
+/* createTaskButton function (uses taskButtons above) */
+function createTaskButton(winEl){
+  const id = winEl.id;
+  const name = winEl.querySelector('.title').innerText;
+  // if button for this window already exists, skip
+  if(taskButtons.querySelector(`[data-for="${id}"]`)) return;
+  const btn = document.createElement('button');
+  btn.className = 'task-btn'; btn.textContent = name; btn.dataset.for = id;
+  btn.addEventListener('click', ()=>{
+    if(winEl.style.display === 'none' || getComputedStyle(winEl).display === 'none'){ winEl.style.display = 'flex'; bringToFront(winEl); }
+    else { winEl.style.display = 'none'; }
+  });
+  taskButtons.appendChild(btn);
 }
 
 /* Drag windows */
@@ -247,6 +267,7 @@ function makeDraggable(winEl){
     function mu(){ endDrag(); document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); }
     document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
   });
+  // touch
   title.addEventListener('touchstart', (e)=>{
     if(e.touches.length!==1) return;
     const t = e.touches[0]; startDrag(t.clientX, t.clientY);
@@ -257,21 +278,8 @@ function makeDraggable(winEl){
   winEl.addEventListener('mousedown', ()=> bringToFront(winEl));
 }
 
-/* initialize windows */
+/* initialize windows and task buttons AFTER taskButtons is defined */
 document.querySelectorAll('.win').forEach((w)=> { makeDraggable(w); createTaskButton(w); });
-
-/* Taskbar buttons */
-const taskButtons = document.getElementById('task-buttons');
-function createTaskButton(winEl){
-  const id = winEl.id; const name = winEl.querySelector('.title').innerText;
-  const btn = document.createElement('button');
-  btn.className = 'task-btn'; btn.textContent = name; btn.dataset.for = id;
-  btn.addEventListener('click', ()=> {
-    if(winEl.style.display === 'none' || getComputedStyle(winEl).display === 'none'){ winEl.style.display = 'flex'; bringToFront(winEl); }
-    else { winEl.style.display = 'none'; }
-  });
-  taskButtons.appendChild(btn);
-}
 
 /* Window controls */
 document.querySelectorAll('.win .btn').forEach(b => {
@@ -351,7 +359,6 @@ icons.forEach(ic => {
   // mouse drag
   let dragging=false, startX=0, startY=0, origX=0, origY=0;
   ic.addEventListener('mousedown', (e)=>{
-    // start dragging only if not a double click (we still handle double below)
     dragging=true; ic.classList.add('focus');
     startX = e.clientX; startY = e.clientY; origX = parseInt(ic.style.left||0,10); origY = parseInt(ic.style.top||0,10);
     function mm(ev){ if(!dragging) return; const nx = origX + (ev.clientX - startX); const ny = origY + (ev.clientY - startY);
@@ -433,9 +440,7 @@ btnGuess.addEventListener('click', ()=>{
 });
 newBtn.addEventListener('click', ()=>{ secret = Math.floor(Math.random()*100)+1; outEl.textContent='Новая игра!'; inEl.value=''; });
 
-/* =========================
-   MINESWEEPER IMPLEMENTATION
-   ========================= */
+/* ========== MINESWEEPER ========== */
 const minesWrap = document.getElementById('mines-board-wrap');
 const minesStatus = document.getElementById('mines-status');
 const minesNew = document.getElementById('mines-new');
@@ -477,7 +482,6 @@ function placeMinesAvoid(firstR, firstC){
     if(cells[r][c].mine) continue;
     cells[r][c].mine = true; placed++;
   }
-  // adj counts
   for(let r=0;r<rows;r++){
     for(let c=0;c<cols;c++){
       if(cells[r][c].mine){ cells[r][c].adj = -1; continue; }
@@ -498,6 +502,7 @@ function revealAllMines(explodeR, explodeC){
     for(let c=0;c<st.cols;c++){
       const cell = st.cells[r][c];
       const el = document.querySelector(`[data-r='${r}'][data-c='${c}']`);
+      if(!el) continue;
       if(cell.mine){
         el.classList.add('revealed','mine');
         el.textContent = '💣';
@@ -513,30 +518,6 @@ function revealAllMines(explodeR, explodeC){
   }
 }
 
-function floodReveal(r,c){
-  const st = minesState;
-  const q = [[r,c]];
-  const seen = new Set();
-  while(q.length){
-    const [cr,cc] = q.shift();
-    const key = cr+'_'+cc;
-    if(seen.has(key)) continue; seen.add(key);
-    const cell = st.cells[cr][cc];
-    const el = document.querySelector(`[data-r='${cr}'][data-c='${cc}']`);
-    if(!cell.revealed && !cell.flagged){
-      cell.revealed = true; st.revealedCount++;
-      el.classList.add('revealed');
-      if(cell.adj>0) el.textContent = cell.adj;
-      else el.textContent = '';
-    }
-    if(cell.adj === 0){
-      for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
-        const rr=cr+dr, cc=cc=cc=cc; // placeholder fix below
-      }
-    }
-  }
-}
-// above loop had a small slip; rewrite floodReveal correctly
 function floodRevealFixed(r,c){
   const st = minesState;
   const q = [[r,c]];
@@ -547,6 +528,7 @@ function floodRevealFixed(r,c){
     if(seen.has(key)) continue; seen.add(key);
     const cell = st.cells[cr][cc];
     const el = document.querySelector(`[data-r='${cr}'][data-c='${cc}']`);
+    if(!el) continue;
     if(!cell.revealed && !cell.flagged){
       cell.revealed = true; st.revealedCount++;
       el.classList.add('revealed');
@@ -574,6 +556,7 @@ function revealCell(r,c){
   if(st.gameOver) return;
   const cell = st.cells[r][c];
   const el = document.querySelector(`[data-r='${r}'][data-c='${c}']`);
+  if(!el) return;
   if(cell.revealed || cell.flagged) return;
   if(!st.started){
     placeMinesAvoid(r,c);
@@ -600,6 +583,7 @@ function toggleFlag(r,c){
   if(st.gameOver || st.cells[r][c].revealed) return;
   const cell = st.cells[r][c];
   const el = document.querySelector(`[data-r='${r}'][data-c='${c}']`);
+  if(!el) return;
   if(cell.flagged){ cell.flagged = false; el.classList.remove('flag'); el.textContent = ''; st.flagsLeft++; }
   else { if(st.flagsLeft<=0) return; cell.flagged = true; el.classList.add('flag'); el.textContent = '⚑'; st.flagsLeft--; }
   updateMinesStatus();
@@ -612,9 +596,9 @@ function checkMinesWin(){
   if(st.revealedCount === total - st.mines && !st.gameOver){
     st.gameOver = true;
     minesStatus.textContent = 'You win! 🎉';
-    // reveal all mines as flags
     for(let r=0;r<st.rows;r++) for(let c=0;c<st.cols;c++){
       const cell = st.cells[r][c]; const el = document.querySelector(`[data-r='${r}'][data-c='${c}']`);
+      if(!el) continue;
       if(cell.mine){ el.classList.add('flag'); el.textContent = '⚑'; }
     }
   }
@@ -632,13 +616,12 @@ function renderMines(){
   board.className = 'mines-board';
   const cs = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cell-size')) || 28;
   board.style.gridTemplateColumns = `repeat(${st.cols}, ${cs}px)`;
-  // create cells
   for(let r=0;r<st.rows;r++){
     for(let c=0;c<st.cols;c++){
       const el = document.createElement('div');
       el.className = 'cell';
       el.dataset.r = r; el.dataset.c = c;
-      el.addEventListener('click', (e)=> {
+      el.addEventListener('click', ()=> {
         if(minesFlagMode){ toggleFlag(r,c); return; }
         revealCell(r,c);
       });
@@ -652,11 +635,9 @@ function renderMines(){
   updateMinesStatus();
 }
 
-/* mines controls */
 minesNew.addEventListener('click', ()=> { newMines(minesDiff.value); });
 minesReset.addEventListener('click', ()=> {
   if(!minesState) return;
-  // reset to same difficulty
   const diff = minesDiff.value;
   newMines(diff);
 });
@@ -666,12 +647,9 @@ minesFlagModeBtn.addEventListener('click', ()=>{
   minesFlagModeBtn.textContent = 'Flag Mode: ' + (minesFlagMode ? 'On' : 'Off');
 });
 
-/* initialize default */
 newMines('beginner');
 
-/* =========================
-   SNAKE IMPLEMENTATION
-   ========================= */
+/* ========== SNAKE ========== */
 const canvas = document.getElementById('snake-canvas');
 const ctx = canvas.getContext('2d');
 const scoreEl = document.getElementById('snake-score');
@@ -679,13 +657,13 @@ const btnStart = document.getElementById('snake-start');
 const btnPause = document.getElementById('snake-pause');
 const btnRestart = document.getElementById('snake-restart');
 
-let gridCount = 20; // 20x20
+let gridCount = 20;
 let cellSize = Math.floor(canvas.width / gridCount);
 let snake = [{x:10,y:10}];
 let dir = {x:0,y:0};
 let food = {x:15,y:15};
 let gameInterval = null;
-let speed = 120; // ms per step
+let speed = 120;
 let running = false;
 let score = 0;
 
@@ -695,8 +673,7 @@ function resetSnake(){
   snake = [{x:10,y:10}];
   dir = {x:0,y:0};
   placeFood();
-  running = false; score = 0; updateScore();
-  drawSnake();
+  running = false; score = 0; updateScore(); drawSnake();
 }
 
 function placeFood(){
@@ -711,53 +688,28 @@ function placeFood(){
 }
 
 function drawSnake(){
-  // clear
   ctx.fillStyle = '#111'; ctx.fillRect(0,0,canvas.width,canvas.height);
-  // draw food
   ctx.fillStyle = '#ff0000'; ctx.fillRect(food.x*cellSize, food.y*cellSize, cellSize, cellSize);
-  // draw snake
   ctx.fillStyle = '#00ff66';
-  snake.forEach((s, idx) => {
-    ctx.fillRect(s.x*cellSize, s.y*cellSize, cellSize-1, cellSize-1);
-  });
+  snake.forEach((s, idx) => { ctx.fillRect(s.x*cellSize, s.y*cellSize, cellSize-1, cellSize-1); });
 }
 
 function stepSnake(){
   if(dir.x===0 && dir.y===0) return;
   const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
-  // wrap-around or collision? We'll wrap-around
   if(head.x < 0) head.x = gridCount - 1;
   if(head.x >= gridCount) head.x = 0;
   if(head.y < 0) head.y = gridCount - 1;
   if(head.y >= gridCount) head.y = 0;
-  // check collision with body
-  if(snake.some(s=>s.x===head.x && s.y===head.y)){
-    // game over
-    running = false; clearInterval(gameInterval); gameInterval = null;
-    alert('Game over! Score: ' + score);
-    return;
-  }
+  if(snake.some(s=>s.x===head.x && s.y===head.y)){ running = false; clearInterval(gameInterval); gameInterval = null; alert('Game over! Score: ' + score); return; }
   snake.unshift(head);
-  // eat food
-  if(head.x === food.x && head.y === food.y){
-    score += 1; updateScore(); placeFood();
-  } else {
-    snake.pop();
-  }
+  if(head.x === food.x && head.y === food.y){ score += 1; updateScore(); placeFood(); } else { snake.pop(); }
   drawSnake();
 }
 
-function startSnake(){
-  if(running) return;
-  running = true;
-  gameInterval = setInterval(stepSnake, speed);
-}
-function pauseSnake(){
-  if(gameInterval){ clearInterval(gameInterval); gameInterval = null; running=false; }
-}
-function restartSnake(){
-  pauseSnake(); resetSnake(); startSnake();
-}
+function startSnake(){ if(running) return; running=true; gameInterval = setInterval(stepSnake, speed); }
+function pauseSnake(){ if(gameInterval){ clearInterval(gameInterval); gameInterval = null; running=false; } }
+function restartSnake(){ pauseSnake(); resetSnake(); startSnake(); }
 function updateScore(){ scoreEl.textContent = 'Score: ' + score; }
 
 document.addEventListener('keydown', (e)=>{
@@ -772,7 +724,6 @@ btnStart.addEventListener('click', ()=> startSnake());
 btnPause.addEventListener('click', ()=> pauseSnake());
 btnRestart.addEventListener('click', ()=> { resetSnake(); startSnake(); });
 
-/* simple swipe for mobile */
 let touchStartX=0, touchStartY=0;
 canvas.addEventListener('touchstart', (e)=>{ const t = e.touches[0]; touchStartX = t.clientX; touchStartY = t.clientY; });
 canvas.addEventListener('touchend', (e)=> {
@@ -786,21 +737,15 @@ canvas.addEventListener('touchend', (e)=> {
   }
 });
 
-/* initialize snake */
 resetSnake();
 drawSnake();
 
-/* Accessibility & initial setup */
-function isTouchDevice(){ return ('ontouchstart' in window) || navigator.maxTouchPoints>0 || navigator.msMaxTouchPoints>0; }
-if(isTouchDevice()) document.documentElement.classList.add('touch');
-
-/* prevent default context menu on mines area */
+/* prevent contextmenu on mines board */
 document.addEventListener('contextmenu', function(e){
-  // allow default elsewhere
   if(e.target && e.target.closest && e.target.closest('.mines-board')) e.preventDefault();
 }, false);
 
-/* Make About window (simple) */
+/* About window creation (kept simple) */
 const aboutWin = document.createElement('div');
 aboutWin.className = 'win'; aboutWin.id = 'win-about';
 aboutWin.style.left = '120px'; aboutWin.style.top = '120px'; aboutWin.style.display = 'none';
