@@ -423,8 +423,8 @@ function applyLang(l){
     const key = el.getAttribute('data-i18n-placeholder');
     if(i18n[l] && i18n[l][key]) el.placeholder = i18n[l][key];
   });
-  // dynamic mines status refresh if needed
-  updateMinesStatus();
+  // defer updating mines status until after script finishes loading (avoids TDZ)
+  setTimeout(()=>{ if(typeof updateMinesStatus === 'function'){ try{ updateMinesStatus(); }catch(e){} } },0);
 }
 
 /* =============================
@@ -1279,7 +1279,7 @@ function bestMove(board){
 function minimax(board, depth, isMax){
   if(checkWin(board,'O')) return 10 - depth;
   if(checkWin(board,'X')) return depth - 10;
-  if(board.every(x=>x!=='')) return 0;
+  if(board.every(x=>x!=='') ) return 0;
   if(isMax){
     let best = -Infinity;
     for(let i=0;i<9;i++) if(board[i]===''){
